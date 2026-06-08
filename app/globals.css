@@ -1,22 +1,52 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary */
+  --dark-teal: #006E74;
+  --light-teal: #0097AC;
+  --soft-black: #231F20;
+  --white: #FFFFFF;
+
+  /* Secondary */
+  --purple: #881E87;
+  --green: #01B27C;
+  --petrol: #003C51;
+  --dark-gray: #7A7480;
+  --orange: #FC6A59;
+  --dark-sand: #DBD3BD;
+
+  /* Washes */
+  --light-gray-wash: #F2F7F8;
+  --mid-gray-wash: #D7E0E3;
+  --dark-gray-wash: #C2BCBE;
+  --sand: #ECECE1;
+
+  /* App base */
+  --background: var(--light-gray-wash);
+  --foreground: var(--soft-black);
 }
 
+/* Tailwind theme mapping */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-dark-teal: var(--dark-teal);
+  --color-light-teal: var(--light-teal);
+  --color-soft-black: var(--soft-black);
+
+  --color-purple: var(--purple);
+  --color-green: var(--green);
+  --color-petrol: var(--petrol);
+
+  --color-dark-gray: var(--dark-gray);
+  --color-orange: var(--orange);
+
+  --color-dark-sand: var(--dark-sand);
+  --color-light-gray-wash: var(--light-gray-wash);
+  --color-mid-gray-wash: var(--mid-gray-wash);
+  --color-dark-gray-wash: var(--dark-gray-wash);
+  --color-sand: var(--sand);
 }
 
 body {
