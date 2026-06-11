@@ -6,10 +6,8 @@ import Layout from "@/components/common/Layout";
 import api from "../../services/api";
 import DeleteModal from "@/components/common/DeleteModal";
 import FormRenderer from "@/components/common/FormRenderer";
+import PropTypes from "prop-types";
 
-// ─────────────────────────────────────────────
-// Inline DrawerEditPage  (replaces iframe)
-// ─────────────────────────────────────────────
 const DrawerEditPage = ({
   modelName,
   identifier,
@@ -38,10 +36,10 @@ const DrawerEditPage = ({
     api
       .get(`/${modelName}/get`, { params: { identifier } })
       .then((res) => {
-        if (res.data?.success !== false) {
-          setForm(res.data || initialForm);
-        } else {
+        if (res.data?.success === false) {
           setError(res.data?.message || "Failed to load data");
+        } else {
+          setForm(res.data || initialForm);
         }
       })
       .catch(() => setError("Failed to load data"))
@@ -118,7 +116,7 @@ const DrawerEditPage = ({
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />{' '}
               Updating...
             </span>
           ) : (
@@ -137,20 +135,18 @@ const DrawerEditPage = ({
   );
 };
 
-// ─────────────────────────────────────────────
-// CommonListPage
-//
-// Props:
-//   modelName       string    (required) — API resource name
-//   keys            string[]  — column keys to render
-//   enableToggle    boolean   — show a status toggle column
-//   hideAddButton   boolean   — hide the "+ Add" button
-//   editFields      array     — field definitions for the drawer edit form
-//   editOptions     object    — dropdown/multicheck options for the drawer
-//   editInitialForm object    — blank form shape (used before data loads)
-//   editValidate    function  — optional (form) => errorString validator
-//   editReadOnly    string[]  — field names rendered as read-only in drawer
-// ─────────────────────────────────────────────
+DrawerEditPage.propTypes = {
+  modelName: PropTypes.string,
+  identifier: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  fields: PropTypes.array,
+  options: PropTypes.object,
+  initialForm: PropTypes.object,
+  validate: PropTypes.func,
+  readOnlyFields: PropTypes.array,
+  onSuccess: PropTypes.func,
+  onCancel: PropTypes.func,
+};
+
 const CommonListPage = ({
   modelName,
   keys = [],
@@ -179,7 +175,14 @@ const CommonListPage = ({
     async (pageNo) => {
       try {
         setLoading(true);
-        if (searchQuery.trim() !== "") {
+        if (searchQuery.trim() === "") {
+          const res = await api.post(`/${modelName}/list`, {
+            page: pageNo,
+            sizePerPage,
+          });
+          setListData(res.data.dtoList || []);
+          setTotalPages(res.data.totalPages || 0);
+        } else {
           const res = await api.post(`/${modelName}/list`, {
             page: 0,
             sizePerPage: 1000,
@@ -193,13 +196,6 @@ const CommonListPage = ({
           setListData(filtered);
           setTotalPages(1);
           setPage(0);
-        } else {
-          const res = await api.post(`/${modelName}/list`, {
-            page: pageNo,
-            sizePerPage,
-          });
-          setListData(res.data.dtoList || []);
-          setTotalPages(res.data.totalPages || 0);
         }
       } catch (err) {
         console.error("Error loading data:", err);
@@ -270,8 +266,15 @@ const CommonListPage = ({
 
       {/* Drawer backdrop */}
       {drawerIdentifier && (
-        <div
+        <button
+          type="button"
           onClick={() => setDrawerIdentifier(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setDrawerIdentifier(null);
+            }
+          }}
+          aria-label="Close drawer"
           className="fixed inset-0 z-40 bg-black/35"
         />
       )}
@@ -417,23 +420,28 @@ const CommonListPage = ({
                       key={item.identifier || index}
                       className="border-b hover:bg-gray-50 transition-colors"
                     >
-                      {keys.map((k) => (
-                        <td key={k} className="p-4 whitespace-nowrap">
-                          {Array.isArray(item?.[k]) ? (
+                      {keys.map((k) => {
+                        let displayValue;
+                        if (Array.isArray(item?.[k])) {
+                          displayValue = (
                             <div className="max-w-xs truncate">
                               {item[k]
-                                .map((v) =>
-                                  typeof v === "object" ? v.name : v
-                                )
+                                .map((v) => (typeof v === "object" ? v.name : v))
                                 .join(", ")}
                             </div>
-                          ) : typeof item?.[k] === "object" ? (
-                            item?.[k]?.name
-                          ) : (
-                            String(item?.[k] ?? "-")
-                          )}
-                        </td>
-                      ))}
+                          );
+                        } else if (typeof item?.[k] === "object") {
+                          displayValue = item?.[k]?.name;
+                        } else {
+                          displayValue = String(item?.[k] ?? "-");
+                        }
+
+                        return (
+                          <td key={k} className="p-4 whitespace-nowrap">
+                            {displayValue}
+                          </td>
+                        );
+                      })}
 
                       {enableToggle && (
                         <td className="p-4 text-center whitespace-nowrap">
@@ -504,6 +512,18 @@ const CommonListPage = ({
       </div>
     </Layout>
   );
+};
+
+CommonListPage.propTypes = {
+  modelName: PropTypes.string.isRequired,
+  keys: PropTypes.array,
+  enableToggle: PropTypes.bool,
+  hideAddButton: PropTypes.bool,
+  editFields: PropTypes.array,
+  editOptions: PropTypes.object,
+  editInitialForm: PropTypes.object,
+  editValidate: PropTypes.func,
+  editReadOnly: PropTypes.array,
 };
 
 export default CommonListPage;

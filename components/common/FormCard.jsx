@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 const FormCard = ({
   title,
   children,
@@ -20,6 +22,12 @@ const FormCard = ({
       )}
     </div>
   );
+};
+
+FormCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node,
+  actions: PropTypes.node
 };
 
 export default FormCard;

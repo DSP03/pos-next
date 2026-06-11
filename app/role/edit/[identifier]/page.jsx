@@ -35,7 +35,6 @@ export default function RoleEdit() {
         identifier: res.data.identifier || "",
         description: res.data.description || "",
       });
-
     } catch (err) {
       console.log("ROLE LOAD ERROR:", err);
       alert("Failed to load role");
@@ -57,8 +56,8 @@ export default function RoleEdit() {
   ];
 
   const validate = (form) => {
-    if (!form.identifier?.trim()) {
-      return "Identifier is required";
+    if (!form.description?.trim()) {
+      return "Description is required";
     }
 
     return null;

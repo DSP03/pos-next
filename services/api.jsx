@@ -30,21 +30,6 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     const status = error.response?.status;
-//     const token = localStorage.getItem("token");
-
-//     if (token && (status === 401 || status === 403)) {
-//       localStorage.clear();
-//       window.location.href = "/login";
-//     }
-
-//     return Promise.reject(error);
-//   }
-// );
 api.interceptors.response.use(
   (response) => {
     console.log("SUCCESS:", response.status, response.config.url);
@@ -65,7 +50,7 @@ api.interceptors.response.use(
       console.log("Redirecting to login...");
  
       localStorage.clear();
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
     }
  
     return Promise.reject(error);

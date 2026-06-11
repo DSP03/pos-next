@@ -85,7 +85,7 @@ const UserEdit = () => {
           return "Name required";
         }
 
-        if (!/^[0-9]{10}$/.test(form.phoneNo || "")) {
+        if (!/^\d{10}$/.test(form.phoneNo || "")) {
           return "Phone must be 10 digits";
         }
 

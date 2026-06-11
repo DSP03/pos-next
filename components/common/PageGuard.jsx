@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import PropTypes from "prop-types";
 
 export default function PageGuard({ children }) {
+  PageGuard.propTypes = {
+    children: PropTypes.node.isRequired,
+  };
   const router = useRouter();
   const pathname = usePathname();
 
@@ -12,7 +16,6 @@ export default function PageGuard({ children }) {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Not logged in
     if (!token) {
       router.replace("/login");
       return;

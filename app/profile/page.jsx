@@ -127,9 +127,9 @@ const Profile = () => {
             <div className="flex flex-wrap gap-3">
 
               {Array.isArray(user?.roles) ? (
-                user.roles.map((role, index) => (
+                user.roles.map((role) => (
                   <span
-                    key={index}
+                    key={role.name || role}
                     className="bg-[#01B27C] text-white px-4 py-2 rounded-full font-semibold"
                   >
                     {role.name || role}

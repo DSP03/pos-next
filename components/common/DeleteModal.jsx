@@ -1,5 +1,7 @@
 "use client";
 
+import PropTypes from "prop-types";
+
 const DeleteModal = ({ onConfirm, onCancel }) => (
   <div
     style={{
@@ -86,5 +88,10 @@ const DeleteModal = ({ onConfirm, onCancel }) => (
     </div>
   </div>
 );
+
+DeleteModal.propTypes = {
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+};
 
 export default DeleteModal;

@@ -1,5 +1,7 @@
 "use client";
 
+import PropTypes from "prop-types";
+
 const ActionButtons = ({
   onEdit,
   onDelete,
@@ -10,6 +12,7 @@ const ActionButtons = ({
     <div className="flex gap-2 justify-center">
       {onEdit && (
         <button
+          type="button"
           onClick={onEdit}
           className="px-3 py-1 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
         >
@@ -19,6 +22,7 @@ const ActionButtons = ({
 
       {onDelete && (
         <button
+          type="button"
           onClick={onDelete}
           className="px-3 py-1 text-xs rounded-md bg-red-600 text-white hover:bg-red-700 transition"
         >
@@ -28,6 +32,7 @@ const ActionButtons = ({
 
       {onToggle && (
         <button
+          type="button"
           onClick={onToggle}
           className={`px-3 py-1 text-xs rounded-md text-white transition ${
             isActive
@@ -40,6 +45,13 @@ const ActionButtons = ({
       )}
     </div>
   );
+};
+
+ActionButtons.propTypes = {
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onToggle: PropTypes.func,
+  isActive: PropTypes.bool,
 };
 
 export default ActionButtons;

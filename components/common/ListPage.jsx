@@ -1,5 +1,6 @@
 "use client";
 
+import PropTypes from "prop-types";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Layout from "@/components/common/Layout";
@@ -18,13 +19,19 @@ const ListPage = ({ modelName, keys = [], enableToggle = false }) => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [refreshFlag, setRefreshFlag] = useState(0);
 
+  ListPage.propTypes = {
+    modelName: PropTypes.string.isRequired,
+    keys: PropTypes.arrayOf(PropTypes.string),
+    enableToggle: PropTypes.bool,
+  };
+
   const sizePerPage = 10;
 
   const loadData = useCallback(
     async (pageNo) => {
       try {
         setLoading(true);
-        if (searchQuery.trim() !== "") {
+        if (searchQuery.trim()) {
           const res = await api.post(`/${modelName}/list`, { page: 0, sizePerPage: 1000 });
           const allData = res.data.dtoList || [];
           const filtered = allData.filter((item) =>
@@ -149,19 +156,28 @@ const ListPage = ({ modelName, keys = [], enableToggle = false }) => {
                 <tbody>
                   {listData.map((item, index) => (
                     <tr key={item.identifier || index} className="border-b hover:bg-gray-50 transition-colors">
-                      {keys.map((k) => (
-                        <td key={k} className="p-4 whitespace-nowrap">
-                          {Array.isArray(item?.[k])
-                            ? (
-                              <div className="max-w-xs truncate">
-                                {item[k].map((v) => (typeof v === "object" ? v.name : v)).join(", ")}
-                              </div>
-                            )
-                            : typeof item?.[k] === "object"
-                            ? item?.[k]?.name
-                            : String(item?.[k] ?? "-")}
-                        </td>
-                      ))}
+                      {keys.map((k) => {
+                        const raw = item?.[k];
+                        let content;
+
+                        if (Array.isArray(raw)) {
+                          content = (
+                            <div className="max-w-xs truncate">
+                              {raw.map((v) => (typeof v === "object" ? v.name : v)).join(", ")}
+                            </div>
+                          );
+                        } else if (raw && typeof raw === "object") {
+                          content = raw.name ?? "-";
+                        } else {
+                          content = String(raw ?? "-");
+                        }
+
+                        return (
+                          <td key={k} className="p-4 whitespace-nowrap">
+                            {content}
+                          </td>
+                        );
+                      })}
                       {enableToggle && (
                         <td className="p-4 text-center whitespace-nowrap">
                           <button

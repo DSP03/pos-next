@@ -1,5 +1,6 @@
 "use client";
 
+import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -69,6 +70,7 @@ const DashboardLayout = ({ children }) => {
           logoutDeletedUser();
         }
       } catch (err) {
+        console.error("Token validation error:", err);
         logoutDeletedUser();
       }
     };
@@ -89,11 +91,11 @@ const DashboardLayout = ({ children }) => {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
           <div className="w-[420px] rounded-xl bg-white p-6 text-center shadow-xl">
             <h2 className="mb-3 text-xl font-bold text-red-600">
-              Account Deleted
+              Account Deleted or Updated by Admin or yourself
             </h2>
 
             <p className="text-gray-700">
-              Your account has been deleted.
+              Your account has been deleted or updated by an administrator or yourself.
             </p>
 
             <p className="mt-2 text-gray-700">
@@ -111,6 +113,10 @@ const DashboardLayout = ({ children }) => {
       </div>
     </div>
   );
+};
+
+DashboardLayout.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export default DashboardLayout;

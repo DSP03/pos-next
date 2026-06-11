@@ -15,6 +15,9 @@ export default function RoleAdd() {
     if (!form.identifier?.trim()) {
       return "Identifier is required";
     }
+    if (!form.description?.trim()) {
+      return "Description is required";
+    }
     return null;
   };
 

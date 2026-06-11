@@ -21,12 +21,13 @@ const Navbar = () => {
   return (
 
     <div className="fixed top-0 left-[240px] right-0 h-16 bg-[#FFFFFF] shadow-md border-b border-[#D7E0E3] flex items-center justify-between px-6 z-40">
-      <h1
+      <button
+        type="button"
         onClick={() => router.push("/dashboard")}
         className="font-bold text-xl text-[#006E74] cursor-pointer hover:text-[#0097AC] transition"
       >
         POS Dashboard
-      </h1>
+      </button>
 
       <div className="flex items-center gap-4">
 

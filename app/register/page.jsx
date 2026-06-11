@@ -58,7 +58,7 @@ export default function RegisterPage() {
   const handleChange = (e) => {
     let value = e.target.value
     if (e.target.name === 'phoneNo') {
-      value = value.replace(/[^0-9]/g, '')
+      value = value.replaceAll(/\D/g, '')
     }
 
     setForm({...form,[e.target.name]: value})
@@ -74,8 +74,10 @@ export default function RegisterPage() {
   const validate = () => {
     const nextErrors = {}
     const nameRegex =/^[A-Za-z\s]+$/
-    const emailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const phoneRegex =/^[0-9][0-9]{9}$/
+    const emailRegex = /^[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+    const phoneRegex =/^\d\d{9}$/
+    const passwordRegex =/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
+    const HINT ="Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number";
     
     if (form.name.trim().length < 3) {
       nextErrors.name ='Minimum 3 characters'
@@ -93,8 +95,8 @@ export default function RegisterPage() {
       nextErrors.phoneNo ='Invalid phone number'
     }
 
-    if (form.password.length < 6) {
-      nextErrors.password ='Password must be at least 6 characters'
+    if (!passwordRegex.test(form.password)){
+      nextErrors.password = HINT
     }
 
     if (form.roles.length === 0) {
@@ -166,11 +168,12 @@ export default function RegisterPage() {
           className="space-y-5"
         >
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-700">
               Full Name
             </label>
 
             <input
+              id="name"
               type="text"
               name="name"
               value={form.name}
@@ -189,11 +192,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="username" className="block mb-2 text-sm font-medium text-gray-700">
               Email Address
             </label>
 
             <input
+              id="username"
               type="email"
               name="username"
               value={form.username}
@@ -212,11 +216,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="phoneNo" className="block mb-2 text-sm font-medium text-gray-700">
               Phone Number
             </label>
 
             <input
+              id="phoneNo"
               type="text"
               name="phoneNo"
               value={form.phoneNo}
@@ -236,11 +241,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
               Password
             </label>
 
             <input
+              id="password"
               type="password"
               name="password"
               value={form.password}

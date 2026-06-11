@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import EditPage from "@/components/common/EditPage";
 import api from "@/services/api";
 
 export default function CategoryEdit() {
 
-  const { identifier } = useParams();
   const router = useRouter();
   const [options, setOptions] = useState({ superCategoryIdentifier: [] });
 

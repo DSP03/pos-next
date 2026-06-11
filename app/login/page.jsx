@@ -79,11 +79,12 @@ const LoginPage = () => {
           className="space-y-4"
         >
           <div>
-            <label className="text-sm text-gray-600 font-medium">
+            <label htmlFor="login-username" className="text-sm text-gray-600 font-medium">
               Email
             </label>
 
             <input
+              id="login-username"
               type="text"
               name="username"
               value={credentials.username}
@@ -97,11 +98,12 @@ const LoginPage = () => {
 
           <div>
 
-            <label className="text-sm text-gray-600 font-medium">
+            <label htmlFor="login-password" className="text-sm text-gray-600 font-medium">
               Password
             </label>
 
             <input
+              id="login-password"
               type="password"
               name="password"
               value={credentials.password}

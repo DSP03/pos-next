@@ -7,7 +7,6 @@ export default function UserList() {
     <SimpleListPage
       modelName="user"
       keys={["username", "name", "phoneNo", "roles"]}
-      hideAddButton
     />
   );
 }
