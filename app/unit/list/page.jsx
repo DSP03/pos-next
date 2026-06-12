@@ -1,10 +1,10 @@
 "use client";
 
-import ListPage from "@/components/common/ListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 export default function UnitList() {
   return (
-    <ListPage
+    <CommonListPage
       modelName="unit"
       keys={["identifier","unitName"]}
       enableToggle={true}

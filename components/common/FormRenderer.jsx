@@ -159,7 +159,7 @@ MulticheckField.propTypes = {
 const FormRenderer = ({ fields, form, setForm, options, errors = {} }) => {
   const handleChange = (e) => {
     const { name, value } = e.target
-    const clean = name === "phoneNo" ? value.replace(/\D/g, "") : value
+    const clean = name === "phoneNo" ? value.replaceAll(/\D/g, "") : value
     setForm((prev) => ({ ...prev, [name]: clean }))
   }
 

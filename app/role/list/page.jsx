@@ -1,10 +1,10 @@
 "use client";
 
-import ListPage from "@/components/common/ListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 export default function RoleList() {
   return (
-    <ListPage
+    <CommonListPage
       modelName="role"
       keys={["identifier","description"]}
       enableToggle={false}

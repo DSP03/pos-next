@@ -1,10 +1,10 @@
 "use client";
 
-import SimpleListPage from "@/components/common/SimpleListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 const NodeList = () => {
   return (
-    <SimpleListPage
+    <CommonListPage
       modelName="node"
       keys={["identifier", "path", "roles"]}
       enableToggle={false}

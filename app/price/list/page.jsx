@@ -1,10 +1,10 @@
 "use client";
 
-import ListPage from "@/components/common/ListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 export default function PriceList() {
   return (
-    <ListPage
+    <CommonListPage
       modelName="price"
       keys={["productName","priceType","value"]}
       enableToggle={false}

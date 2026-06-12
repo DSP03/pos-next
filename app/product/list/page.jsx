@@ -1,10 +1,10 @@
 "use client";
 
-import SimpleListPage from "@/components/common/SimpleListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 const ProductList = () => {
   return (
-    <SimpleListPage
+    <CommonListPage
       modelName="product"
       keys={[
         "identifier",

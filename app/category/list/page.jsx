@@ -1,10 +1,10 @@
 "use client";
 
-import SimpleListPage from "@/components/common/SimpleListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 const CategoryList = () => {
   return (
-    <SimpleListPage
+    <CommonListPage
       modelName="category"
       keys={["identifier","name","superCategoryIdentifier"]}
     />

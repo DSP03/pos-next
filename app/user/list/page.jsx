@@ -1,10 +1,10 @@
 "use client";
 
-import SimpleListPage from "@/components/common/SimpleListPage";
+import CommonListPage from "@/components/common/CommonListPage";
 
 export default function UserList() {
   return (
-    <SimpleListPage
+    <CommonListPage
       modelName="user"
       keys={["username", "name", "phoneNo", "roles"]}
     />
