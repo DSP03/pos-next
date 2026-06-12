@@ -83,6 +83,7 @@ export default function PriceEdit() {
           label: "Value",
           type: "text",
           disabled: false,
+          inputMode:"decimal",
         },
       ]}
       initialForm={{
@@ -90,6 +91,17 @@ export default function PriceEdit() {
         productName: productMap[priceData.productId] || "",
         priceType: priceData.priceType || "",
         value: priceData.value || "",
+      }}
+      validate={(form) => {
+        if (!form.value && form.value !== 0) {
+          return "Value is required";
+        }
+
+        if (Number.isNaN(Number(form.value)) || Number(form.value) <= 0) {
+          return "Value must be a positive number";
+        }
+
+        return null;
       }}
       onSuccess={() => router.push("/price/list")}
       onCancel={() => router.push("/price/list")}

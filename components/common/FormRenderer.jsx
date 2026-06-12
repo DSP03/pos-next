@@ -25,26 +25,25 @@ const FieldError = ({ error }) =>
 FieldError.propTypes = {
   error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
 };
-
-const TextField = ({ f, form, handleChange, errors }) => (
-  <div>
-    <FieldLabel label={f.label} />
-    <input
-      type={f.type === "phone" ? "text" : f.type}
-      name={f.name}
-      value={form[f.name] ?? ""}
-      onChange={handleChange}
-      placeholder={f.label}
-      disabled={f.disabled}
-      autoComplete={f.type === "password" ? "new-password" : undefined}
-      inputMode={f.type === "phone" ? "numeric" : undefined}
-      pattern={f.type === "phone" ? String.raw`\d*` : undefined}
-      maxLength={f.type === "phone" ? 10 : undefined}
-      className={inputClass(f.disabled)}
-    />
-    <FieldError error={errors[f.name]} />
-  </div>
-);
+  const TextField = ({ f, form, handleChange, errors }) => (
+    <div>
+      <FieldLabel label={f.label} />
+      <input
+        type={f.type === "phone" ? "text" : f.type}
+        name={f.name}
+        value={form[f.name] ?? ""}
+        onChange={handleChange}
+        placeholder={f.label}
+        disabled={f.disabled}
+        autoComplete={f.type === "password" ? "new-password" : undefined}
+        inputMode={f.inputMode ?? (f.type === "phone" ? "numeric" : undefined)}
+        pattern={f.type === "phone" ? String.raw`\d*` : undefined}
+        maxLength={f.type === "phone" ? 10 : undefined}
+        className={inputClass(f.disabled)}
+      />
+      <FieldError error={errors[f.name]} />
+    </div>
+  );
 
 TextField.propTypes = {
   f: PropTypes.object.isRequired,

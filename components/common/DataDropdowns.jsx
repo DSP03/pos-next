@@ -22,7 +22,8 @@ export const getModels = async () => {
 
 /* UNIT */
 export const getUnits = async () => {
-  return await fetchList("/unit/list");
+    const res = await api.post("/unit/active");
+    return res.data || [];
 };
 
 /* CATEGORY */

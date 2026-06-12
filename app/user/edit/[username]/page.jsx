@@ -16,9 +16,6 @@ const UserEdit = () => {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    console.log("PARAMS:", params.username);
-    console.log("DECODED:", username);
-
     if (username) {
       loadUser();
       loadRoles();
@@ -30,7 +27,6 @@ const UserEdit = () => {
       const res = await api.get("/user/get", {
         params: { username },
       });
-      console.log("USER DATA:", res.data);
       setUserData(res.data);
     } catch (err) {
       console.log("GET ERROR:", err);
@@ -43,7 +39,6 @@ const UserEdit = () => {
         page: 0,
         sizePerPage: 100,
       });
-
       setRoles(
         (res.data.dtoList || []).map((r) => ({
           identifier: r.identifier,
@@ -65,32 +60,42 @@ const UserEdit = () => {
       modelName="user"
       options={{ roles }}
       fields={[
-        {name: "id",label: "ID",type: "text",disabled: true,},
-        {name: "name",label: "Name",type: "text",},
-        {name: "username",label: "Username",type: "text",},
-        {name: "phoneNo",label: "Phone",type: "text",},
-        {name: "roles",label: "Roles",type: "multicheck",},
+        { name: "id",       label: "ID",       type: "text",       disabled: true },
+        { name: "name",     label: "Name",     type: "text" },
+        { name: "username", label: "Username", type: "text" },
+        { name: "phoneNo",  label: "Phone",    type: "text" },
+        { name: "roles",    label: "Roles",    type: "multicheck" },
       ]}
       initialForm={{
-        id: userData.id || "",
-        name: userData.name || "",
+        id:       userData.id       || "",
+        name:     userData.name     || "",
         username: userData.username || "",
-        phoneNo: userData.phoneNo || "",
-        roles: Array.isArray(userData.roles)
-          ? userData.roles
-          : [],
+        phoneNo:  userData.phoneNo  || "",
+        roles:    Array.isArray(userData.roles) ? userData.roles : [],
       }}
       validate={(form) => {
-        if (!form.name) {
-          return "Name required";
+        const nameRegex  = /^[A-Za-z\s]+$/;
+        const emailRegex = /^[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+        const phoneRegex = /^\d{10}$/;
+
+        if (form.name.trim().length < 3) {
+          return "Name must be at least 3 characters";
         }
 
-        if (!/^\d{10}$/.test(form.phoneNo || "")) {
-          return "Phone must be 10 digits";
+        if (!nameRegex.test(form.name)) {
+          return "Name must contain only letters";
+        }
+
+        if (!emailRegex.test(form.username)) {
+          return "Invalid email address";
+        }
+
+        if (!phoneRegex.test(form.phoneNo || "")) {
+          return "Invalid phone number";
         }
 
         if (!form.roles?.length) {
-          return "Select roles";
+          return "Select at least one role";
         }
 
         return null;

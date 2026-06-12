@@ -63,7 +63,7 @@ const NodeEdit = () => {
         { name: "roles", label: "Roles", type: "multicheck" },
       ]}
       validate={(form) => {
-        if (!form.path) return "Path is required";
+        if (!form.path?.trim()) return "Path is required";
         if (!form.roles || form.roles.length === 0) 
           return "At least one role is required";
         return null;

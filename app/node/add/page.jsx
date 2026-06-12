@@ -47,7 +47,7 @@ const NodeAdd = () => {
       options={options}
       validate={(form) => {
         if (!form.identifier) return "Identifier is required";
-        if (!form.path) return "Path is required";
+        if (!form.path?.trim()) return "Path is required";
         if (!form.roles || form.roles.length === 0)
           return "At least one role is required";
         return null;
