@@ -64,7 +64,7 @@ const ProductAdd = () => {
       ]}
       validate={(form) => {
         if (!form.identifier) return "Identifier required";
-        if (!form.productName) return "Product name required";
+        if (!form.productName?.trim()) return "Product name required";
         if (!form.brand) return "Brand required";
         if (!form.model) return "Model required";
         if (!form.unit) return "Unit required";
