@@ -27,7 +27,6 @@ export default function UserAdd() {
     fetchRoles()
   }, [])
 
-  // return an object of field errors instead of a single string
   const validate = (form) => {
     const errors = {}
     const nameRegex = /^[A-Za-z\s]+$/

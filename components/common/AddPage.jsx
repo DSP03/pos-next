@@ -30,13 +30,11 @@ const AddPage = ({
 
     const validation = validate?.(form)
 
-    // if validate returns a non-empty object → per-field errors
     if (validation && typeof validation === 'object' && Object.keys(validation).length > 0) {
       setFieldErrors(validation)
       return
     }
 
-    // legacy: if validate returns a string → top-level error
     if (validation && typeof validation === 'string') {
       setError(validation)
       return

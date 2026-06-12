@@ -66,13 +66,11 @@ const EditPage = ({
     if (validate) {
       const err = validate(form);
 
-      // per-field errors object
       if (err && typeof err === "object" && Object.keys(err).length > 0) {
         setFieldErrors(err);
         return;
       }
 
-      // legacy single string error
       if (err && typeof err === "string") {
         setError(err);
         return;
