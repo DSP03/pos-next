@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, ShoppingCart, RefreshCw } from "lucide-react";
 import api from "@/services/api";
+import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
 import PageGuard from "@/components/common/PageGuard";
 
 const today = () =>
-  new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
+  new Date().toLocaleDateString("en-GB").replaceAll("/", "-");
 
 const currency = (val) =>
   `₹${Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
@@ -169,7 +170,7 @@ const CartPage = () => {
       .catch(console.error);
 
     api
-      .post("/customer/list", { page: 0, sizePerPage: 500 })
+      .get("/customer/active", { page: 0, sizePerPage: 500 })
       .then((res) => setCustomers(res.data.dtoList ?? res.data ?? []))
       .catch(console.error);
   }, []);
@@ -260,6 +261,23 @@ const CartPage = () => {
     setToast(msg);
     setTimeout(() => setToast(""), 3000);
   };
+  const handleClearCart = async () => {
+  if (!customer) return;
+
+  try {
+    await api.post("/cart/delete", {
+      identifier: customer
+    });
+
+    setEntries([]);
+    setCartData(null);
+
+    showToast("Cart cleared");
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to clear cart");
+  }
+};
 
   return (
     <PageGuard>
@@ -331,6 +349,13 @@ const CartPage = () => {
                   >
                     Back
                   </button>
+                  <button
+                    onClick={handleClearCart}
+                    disabled={!customer}
+                    className="flex-1 py-3 rounded-2xl font-semibold border border-red-500 text-red-600 hover:bg-red-50 transition-all"
+                  >
+                    Clear Cart
+                  </button>
                 </div>
 
               </div>
@@ -347,5 +372,59 @@ const CartPage = () => {
     </PageGuard> 
   );
 };
+
+Field.propTypes = {
+  label: PropTypes.string.isRequired,
+  children: PropTypes.node,
+};
+
+CustomerField.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  customers: PropTypes.arrayOf(
+    PropTypes.shape({
+      identifier: PropTypes.string,
+      name: PropTypes.string,
+    })
+  ).isRequired,
+};
+
+ProductSelector.propTypes = {
+  products: PropTypes.arrayOf(
+    PropTypes.shape({
+      identifier: PropTypes.string,
+      name: PropTypes.string,
+    })
+  ).isRequired,
+  selectedProduct: PropTypes.string,
+  onSelect: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
+
+CartTable.propTypes = {
+  entries: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onQtyChange: PropTypes.func.isRequired,
+  onRemove: PropTypes.func.isRequired,
+};
+
+TotalsRow.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.node.isRequired,
+  green: PropTypes.bool,
+  bold: PropTypes.bool,
+};
+
+CartTotals.propTypes = {
+  cart: PropTypes.shape({
+    originalPrice: PropTypes.number,
+    discount: PropTypes.number,
+    totalPrice: PropTypes.number,
+  }),
+  onRecalculate: PropTypes.func.isRequired,
+  recalculating: PropTypes.bool,
+};
+
+CartPage.propTypes = {};
 
 export default CartPage;

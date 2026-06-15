@@ -11,9 +11,9 @@ import { validateCustomer } from "@/app/customer/utils/customerValidator";
 const CUSTOMER_FIELDS = [
   { name: "divider-core", type: "divider", label: "Customer Information" },
 
-  { name: "name",    type: "text",  label: "Full Name",     required: true  },
-  { name: "phoneNo", type: "phone", label: "Phone Number",  required: true, disabled: true },
-  { name: "email",   type: "email", label: "Email Address", required: false },
+  { name: "name", type: "text", label: "Full Name", required: true },
+  { name: "phoneNo", type: "phone", label: "Phone Number", required: true, disabled: true },
+  { name: "email", type: "email", label: "Email Address", required: false },
 
   { name: "divider-class", type: "divider", label: "Classification" },
 
@@ -24,24 +24,25 @@ const CUSTOMER_FIELDS = [
     required: true,
     options: [
       { identifier: "individual", label: "Individual" },
-      { identifier: "business",   label: "Business"   },
+      { identifier: "business", label: "Business" },
       { identifier: "government", label: "Government" },
     ],
   },
+
   {
     name: "balanceType",
     type: "radio",
     label: "Balance Type",
     options: [
       { identifier: "credit", label: "Credit" },
-      { identifier: "debit",  label: "Debit"  },
+      { identifier: "debit", label: "Debit" },
     ],
   },
 
   { name: "divider-fin", type: "divider", label: "Financials" },
 
-  { name: "balance",     type: "number", label: "Opening Balance", min: 0, step: 0.01 },
-  { name: "creditLimit", type: "number", label: "Credit Limit",    min: 0, step: 0.01 },
+  { name: "balance", type: "number", label: "Opening Balance", min: 0, step: 0.01 },
+  { name: "creditLimit", type: "number", label: "Credit Limit", min: 0, step: 0.01 },
 
   { name: "status", type: "status", label: "Status" },
 
@@ -51,10 +52,10 @@ const CUSTOMER_FIELDS = [
     label: "Billing Address",
     fields: [
       { name: "addressLine", type: "textarea", label: "Address Line", rows: 2, span: "full" },
-      { name: "city",    type: "text", label: "City"              },
-      { name: "state",   type: "text", label: "State"             },
-      { name: "zip",     type: "text", label: "ZIP / Postal Code" },
-      { name: "country", type: "text", label: "Country"           },
+      { name: "city", type: "text", label: "City" },
+      { name: "state", type: "text", label: "State" },
+      { name: "zip", type: "text", label: "ZIP / Postal Code" },
+      { name: "country", type: "text", label: "Country" },
     ],
   },
 
@@ -64,75 +65,103 @@ const CUSTOMER_FIELDS = [
     label: "Shipping Address",
     fields: [
       { name: "addressLine", type: "textarea", label: "Address Line", rows: 2, span: "full" },
-      { name: "city",    type: "text", label: "City"              },
-      { name: "state",   type: "text", label: "State"             },
-      { name: "zip",     type: "text", label: "ZIP / Postal Code" },
-      { name: "country", type: "text", label: "Country"           },
+      { name: "city", type: "text", label: "City" },
+      { name: "state", type: "text", label: "State" },
+      { name: "zip", type: "text", label: "ZIP / Postal Code" },
+      { name: "country", type: "text", label: "Country" },
     ],
   },
 ];
 
-const EMPTY_ADDRESS = { addressLine: "", city: "", state: "", zip: "", country: "" };
+const EMPTY_ADDRESS = {
+  addressLine: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "",
+};
 
 const normalizeForm = (data) => ({
-  name:            data.name        ?? "",
-  phoneNo:         data.phoneNo     ?? "",
-  email:           data.email       ?? "",
-  balance:         data.balance     ?? 0,
-  balanceType:     data.balanceType ?? "",
-  partyType:       data.partyType   ?? "",
-  creditLimit:     data.creditLimit ?? 0,
-  status:          data.status      ?? true,
-  billingAddress:  data.billingAddress  ?? { ...EMPTY_ADDRESS },
-  shippingAddress: data.shippingAddress ?? { ...EMPTY_ADDRESS },
+  name: data?.name ?? "",
+  phoneNo: data?.phoneNo ?? "",
+  email: data?.email ?? "",
+  balance: data?.balance ?? 0,
+  balanceType: data?.balanceType ?? "",
+  partyType: data?.partyType ?? "",
+  creditLimit: data?.creditLimit ?? 0,
+  status: data?.status ?? true,
+  billingAddress: data?.billingAddress ?? { ...EMPTY_ADDRESS },
+  shippingAddress: data?.shippingAddress ?? { ...EMPTY_ADDRESS },
 });
 
 export default function CustomerEdit() {
-  const router   = useRouter();
+  const router = useRouter();
   const { identifier } = useParams();
 
-  const [form,     setForm]     = useState(null);
-  const [errors,   setErrors]   = useState({});
-  const [loading,  setLoading]  = useState(false);
+  const [form, setForm] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    if (!identifier) return;
+
+    const load = async () => {
       try {
-        const res = await api.get(`/customer/${identifier}`);
+        const res = await api.get(`/customer/get`, {
+          params: { identifier },
+        });
+
+        if (!res.data) {
+          setErrors({ api: "Customer not found." });
+          return;
+        }
+
         setForm(normalizeForm(res.data));
-      } catch {
-        setErrors({ api: "Failed to load customer. Please try again." });
+      } catch (e) {
+        setErrors({
+          api: e?.response?.data?.message || "Failed to load customer.",
+        });
       } finally {
         setFetching(false);
       }
     };
-    fetch();
+
+    load();
   }, [identifier]);
 
   const submit = async () => {
     const err = validateCustomer(form);
+
     if (Object.keys(err).length) {
       setErrors(err);
+
       const firstKey = Object.keys(err)[0];
-      document.querySelector(`[name="${firstKey}"]`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      document
+        .querySelector(`[name="${firstKey}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+
       return;
     }
 
     try {
       setLoading(true);
       setErrors({});
-      const res = await api.put(`/customer/update`, form);
-      if (!res.data.success) {
-        setErrors({ api: res.data.message });
+
+      const res = await api.post(`/customer/update`, { ...form, identifier });
+
+      if (!res.data?.success) {
+        setErrors({ api: res.data?.message || "Update failed" });
         return;
       }
+
       router.push("/customer/list");
-    } catch {
-      setErrors({ api: "Server error. Please try again." });
+    } catch (e) {
+      const message =
+        e?.response?.data?.message ||
+        e?.message ||
+        "Server error. Please try again.";
+      setErrors({ api: message });
     } finally {
       setLoading(false);
     }
@@ -142,39 +171,38 @@ export default function CustomerEdit() {
     <PageGuard>
       <Layout>
         <div className="p-6 max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">
-                Customers
-              </p>
-              <h1 className="text-2xl font-bold text-gray-800">Edit Customer</h1>
-            </div>
+
+          <div className="mb-6">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">
+              Customers
+            </p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Edit Customer
+            </h1>
           </div>
 
           {fetching ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex justify-center">
-              <svg className="w-6 h-6 animate-spin text-[#0097AC]" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"/>
+            <div className="bg-white p-12 flex justify-center rounded-2xl shadow-sm border">
+              <svg className="w-6 h-6 animate-spin text-[#0097AC]" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               </svg>
             </div>
-          ) : form ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <FormRenderer
-                fields={CUSTOMER_FIELDS}
-                form={form}
-                setForm={setForm}
-                errors={errors}
-                columns={2}
-              />
-            </div>
-          ) : null}
+          ) : (
+            form && (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border">
+                <FormRenderer
+                  fields={CUSTOMER_FIELDS}
+                  form={form}
+                  setForm={setForm}
+                  errors={errors}
+                  columns={2}
+                />
+              </div>
+            )
+          )}
 
           {errors.api && (
-            <div className="mt-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-              <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
-              </svg>
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {errors.api}
             </div>
           )}
@@ -184,23 +212,14 @@ export default function CustomerEdit() {
               <button
                 onClick={submit}
                 disabled={loading}
-                className="bg-[#0097AC] hover:bg-[#007a8c] disabled:opacity-60
-                  text-white font-medium px-6 py-2.5 rounded-lg transition
-                  flex items-center gap-2"
+                className="bg-[#0097AC] text-white px-6 py-2.5 rounded-lg disabled:opacity-60"
               >
-                {loading && (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"/>
-                  </svg>
-                )}
-                {loading ? "Saving…" : "Update Customer"}
+                {loading ? "Saving..." : "Update Customer"}
               </button>
 
               <button
                 onClick={() => router.push("/customer/list")}
-                className="border border-gray-300 hover:bg-gray-50 text-gray-700
-                  font-medium px-6 py-2.5 rounded-lg transition"
+                className="border px-6 py-2.5 rounded-lg"
               >
                 Cancel
               </button>
