@@ -6,6 +6,8 @@ import { Plus, Trash2, ShoppingCart, RefreshCw } from "lucide-react";
 import api from "@/services/api";
 import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
+import CustomerSelect from "@/components/common/CustomerSelect";
+import ProductSelect from "@/components/common/ProductSelect";
 import PageGuard from "@/components/common/PageGuard";
 
 const today = () =>
@@ -18,51 +20,6 @@ const Field = ({ label, children }) => (
   <div className="border border-[#D9E5E7] rounded-lg px-4 pt-2 pb-2.5">
     <p className="text-xs text-gray-500 mb-1">{label}</p>
     {children}
-  </div>
-);
-
-const CustomerField = ({ value, onChange, customers }) => (
-  <Field label="Customer">
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-transparent text-gray-900 font-medium focus:outline-none"
-    >
-      <option value="">Select customer...</option>
-      {customers.map((c) => (
-        <option key={c.identifier} value={c.identifier}>
-          {c.name ?? c.identifier}
-        </option>
-      ))}
-    </select>
-  </Field>
-);
-
-const ProductSelector = ({ products, selectedProduct, onSelect, onAdd, disabled }) => (
-  <div className="flex items-end gap-3">
-    <div className="flex-1 border border-[#D9E5E7] rounded-lg px-4 pt-2 pb-2.5">
-      <p className="text-xs text-gray-500 mb-1">Add Product</p>
-      <select
-        value={selectedProduct}
-        onChange={(e) => onSelect(e.target.value)}
-        className="w-full bg-transparent text-gray-900 focus:outline-none"
-      >
-        <option value="">Select product...</option>
-        {products.map((p) => (
-          <option key={p.identifier} value={p.identifier}>
-            {p.name ?? p.identifier}
-          </option>
-        ))}
-      </select>
-    </div>
-    <button
-      onClick={onAdd}
-      disabled={disabled || !selectedProduct}
-      title="Add to cart"
-      className="h-[52px] w-11 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-700 to-red-500 text-white hover:opacity-90 disabled:opacity-40 shrink-0 transition-all"
-    >
-      <Plus size={18} />
-    </button>
   </div>
 );
 
@@ -82,7 +39,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
         {entries.length === 0 ? (
           <tr>
             <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
-              No items yet - select a product above to begin.
+              No items yet — select a product above to begin.
             </td>
           </tr>
         ) : (
@@ -124,7 +81,12 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
 const TotalsRow = ({ label, value, green, bold }) => (
   <div className="flex justify-between">
     <span className="text-gray-500">{label}</span>
-    <span className={[green ? "text-green-600" : "text-gray-900", bold ? "font-bold text-base" : ""].join(" ")}>
+    <span
+      className={[
+        green ? "text-green-600" : "text-gray-900",
+        bold ? "font-bold text-base" : "",
+      ].join(" ")}
+    >
       {value}
     </span>
   </div>
@@ -132,7 +94,8 @@ const TotalsRow = ({ label, value, green, bold }) => (
 
 const CartTotals = ({ cart, onRecalculate, recalculating }) => (
   <div className="flex justify-end mt-6">
-    <div className="w-80 space-y-3 text-sm bg-white border border-red-100 rounded-xl p-4 shadow-sm">      <TotalsRow label="Original Price" value={currency(cart?.originalPrice)} />
+    <div className="w-80 space-y-3 text-sm bg-white border border-red-100 rounded-xl p-4 shadow-sm">
+      <TotalsRow label="Original Price" value={currency(cart?.originalPrice)} />
       <TotalsRow label="Discount" value={`- ${currency(cart?.discount)}`} green />
       <div className="border-t border-[#D9E5E7] pt-2 flex items-center justify-between">
         <TotalsRow label="Total Payable" value={currency(cart?.totalPrice)} bold />
@@ -152,43 +115,38 @@ const CartTotals = ({ cart, onRecalculate, recalculating }) => (
 const CartPage = () => {
   const router = useRouter();
 
-  const [customers, setCustomers] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [customer, setCustomer] = useState("");
+  const [customer, setCustomer] = useState(null);
   const [cartData, setCartData] = useState(null);
   const [entries, setEntries] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [saving, setSaving] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
 
-  useEffect(() => {
-    api
-      .post("/product/list", { page: 0, sizePerPage: 500 })
-      .then((res) => setProducts(res.data.dtoList ?? res.data ?? []))
-      .catch(console.error);
+  const customerId = customer?.value ?? null;
 
-    api
-      .get("/customer/active", { page: 0, sizePerPage: 500 })
-      .then((res) => setCustomers(res.data.dtoList ?? res.data ?? []))
-      .catch(console.error);
-  }, []);
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
+  };
 
-  const fetchCart = async (customerId) => {
-    if (!customerId) {
+  const fetchCart = async (id) => {
+    if (!id) {
       setCartData(null);
       setEntries([]);
       return;
     }
     setLoading(true);
     try {
-      const cartRes = await api.get(`/cart/get?identifier=${customerId}`);
+      const cartRes = await api.get(`/cart/get?identifier=${id}`);
       setCartData(cartRes.data);
 
       const entriesRes = await api.post("/cartEntry/list", { page: 0, sizePerPage: 500 });
-      const all = Array.isArray(entriesRes.data) ? entriesRes.data : (entriesRes.data?.dtoList ?? []);
-      setEntries(all.filter((e) => e.cartId === customerId));
+      const all = Array.isArray(entriesRes.data)
+        ? entriesRes.data
+        : (entriesRes.data?.dtoList ?? []);
+      setEntries(all.filter((e) => e.cartId === id));
     } catch (err) {
       console.error(err);
       setCartData(null);
@@ -200,16 +158,21 @@ const CartPage = () => {
   };
 
   useEffect(() => {
-    fetchCart(customer);
-  }, [customer]);
+    fetchCart(customerId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerId]);
 
   const handleAddProduct = async () => {
-    if (!selectedProduct || !customer) return;
+    if (!selectedProduct?.value || !customerId) return;
     setSaving(true);
     try {
-      await api.post("/cartEntry/add", { productId: selectedProduct, cartId: customer, quantity: 1 });
-      setSelectedProduct("");
-      await fetchCart(customer);
+      await api.post("/cartEntry/add", {
+        productId: selectedProduct.value,
+        cartId: customerId,
+        quantity: 1,
+      });
+      setSelectedProduct(null);
+      await fetchCart(customerId);
       showToast("Item added");
     } catch {
       showToast("Failed to add item");
@@ -224,7 +187,7 @@ const CartPage = () => {
     if (!parsed || parsed < 1) return;
     try {
       await api.post("/cartEntry/update", { ...entry, quantity: parsed });
-      await fetchCart(customer);
+      await fetchCart(customerId);
     } catch (err) {
       console.error(err);
       showToast("Failed to update quantity");
@@ -235,7 +198,7 @@ const CartPage = () => {
     const entry = entries[index];
     try {
       await api.post("/cartEntry/delete", { identifier: entry.identifier });
-      await fetchCart(customer);
+      await fetchCart(customerId);
       showToast("Item removed");
     } catch (err) {
       console.error(err);
@@ -244,10 +207,10 @@ const CartPage = () => {
   };
 
   const handleRecalculate = async () => {
-    if (!customer) return;
+    if (!customerId) return;
     setRecalculating(true);
     try {
-      const res = await api.post(`/cart/recalculate?identifier=${customer}`);
+      const res = await api.post(`/cart/recalculate?identifier=${customerId}`);
       setCartData(res.data);
       showToast("Totals updated");
     } catch {
@@ -257,27 +220,32 @@ const CartPage = () => {
     }
   };
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
+  const handleSaveCart = async () => {
+    if (!customerId) return;
+    setSaving(true);
+    try {
+      const res = await api.post(`/cart/recalculate?identifier=${customerId}`);
+      setCartData(res.data);
+      showToast("Cart saved");
+    } catch {
+      showToast("Failed to save cart");
+    } finally {
+      setSaving(false);
+    }
   };
+
   const handleClearCart = async () => {
-  if (!customer) return;
-
-  try {
-    await api.post("/cart/delete", {
-      identifier: customer
-    });
-
-    setEntries([]);
-    setCartData(null);
-
-    showToast("Cart cleared");
-  } catch (err) {
-    console.error(err);
-    showToast("Failed to clear cart");
-  }
-};
+    if (!customerId) return;
+    try {
+      await api.post("/cart/delete", { identifier: customerId });
+      setEntries([]);
+      setCartData(null);
+      showToast("Cart cleared");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to clear cart");
+    }
+  };
 
   return (
     <PageGuard>
@@ -286,7 +254,9 @@ const CartPage = () => {
           <div className="max-w-6xl mx-auto">
             <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-[#D9E5E7]">
 
-                <div className="bg-gradient-to-r from-red-700 to-red-500 px-8 py-6">                <div className="flex items-center gap-3">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-red-700 to-red-500 px-8 py-6">
+                <div className="flex items-center gap-3">
                   <ShoppingCart size={24} className="text-white" />
                   <div>
                     <h2 className="text-3xl font-bold text-white">Cart</h2>
@@ -297,44 +267,70 @@ const CartPage = () => {
 
               <div className="p-8 space-y-6">
 
+                {/* Customer / ID / Date row */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <CustomerField value={customer} onChange={setCustomer} customers={customers} />
+                  <Field label="Customer">
+                    <CustomerSelect value={customer} onChange={setCustomer} />
+                  </Field>
                   <Field label="Customer ID">
-                    <p className="font-medium text-gray-900 font-mono text-sm">{customer || "-"}</p>
+                    <p className="font-medium text-gray-900 font-mono text-sm">
+                      {customerId || "-"}
+                    </p>
                   </Field>
                   <Field label="Date">
                     <p className="font-medium text-gray-500">{today()}</p>
                   </Field>
                 </div>
 
-                {customer && (
+                {/* Add product — inlined to avoid sub-component forwardRef issue */}
+                {customerId && (
                   <div className="bg-white rounded-2xl p-4 border border-[#D9E5E7] shadow-sm">
-                    <ProductSelector
-                      products={products}
-                      selectedProduct={selectedProduct}
-                      onSelect={setSelectedProduct}
-                      onAdd={handleAddProduct}
-                      disabled={saving}
-                    />
+                    <div className="flex items-end gap-3">
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-500 mb-1">Add Product</p>
+                        <ProductSelect
+                          value={selectedProduct}
+                          onChange={setSelectedProduct}
+                        />
+                      </div>
+                      <button
+                        onClick={handleAddProduct}
+                        disabled={saving || !selectedProduct}
+                        title="Add Product"
+                        className="h-[52px] w-11 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-700 to-red-500 text-black hover:opacity-90 disabled:opacity-40"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
                   </div>
                 )}
 
+                {/* Cart table + totals */}
                 {loading ? (
                   <div className="py-12 text-center text-gray-400 text-sm">Loading cart...</div>
                 ) : (
                   <>
-                    <CartTable entries={entries} onQtyChange={handleQtyChange} onRemove={handleRemove} />
-                    <CartTotals cart={cartData} onRecalculate={handleRecalculate} recalculating={recalculating} />
+                    <CartTable
+                      entries={entries}
+                      onQtyChange={handleQtyChange}
+                      onRemove={handleRemove}
+                    />
+                    <CartTotals
+                      cart={cartData}
+                      onRecalculate={handleRecalculate}
+                      recalculating={recalculating}
+                    />
                   </>
                 )}
 
+                {/* Action buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-2">
                   <button
-                    onClick={handleRecalculate}
-                    disabled={!customer || recalculating}
+                    onClick={handleSaveCart}
+                    disabled={!customerId || saving}
                     className="flex-1 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:scale-[1.02] hover:shadow-xl disabled:opacity-40 transition-all duration-300 shadow-lg"
                   >
-                    {recalculating ? (
+                    {saving ? (
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Saving...
@@ -345,13 +341,13 @@ const CartPage = () => {
                   </button>
                   <button
                     onClick={() => router.back()}
-                    className="flex-1 py-3 rounded-2xl font-semibold border-red-600 text-red-600 hover:bg-red-50 transition-all duration-300"
+                    className="flex-1 py-3 rounded-2xl font-semibold border border-red-600 text-red-600 hover:bg-red-50 transition-all duration-300"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleClearCart}
-                    disabled={!customer}
+                    disabled={!customerId}
                     className="flex-1 py-3 rounded-2xl font-semibold border border-red-500 text-red-600 hover:bg-red-50 transition-all"
                   >
                     Clear Cart
@@ -363,43 +359,20 @@ const CartPage = () => {
           </div>
         </div>
 
+        {/* Toast */}
         {toast && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-[#D9E5E7] shadow-lg px-6 py-3 rounded-xl text-sm text-gray-700 z-50">
             {toast}
           </div>
         )}
       </Layout>
-    </PageGuard> 
+    </PageGuard>
   );
 };
 
 Field.propTypes = {
   label: PropTypes.string.isRequired,
   children: PropTypes.node,
-};
-
-CustomerField.propTypes = {
-  value: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-  customers: PropTypes.arrayOf(
-    PropTypes.shape({
-      identifier: PropTypes.string,
-      name: PropTypes.string,
-    })
-  ).isRequired,
-};
-
-ProductSelector.propTypes = {
-  products: PropTypes.arrayOf(
-    PropTypes.shape({
-      identifier: PropTypes.string,
-      name: PropTypes.string,
-    })
-  ).isRequired,
-  selectedProduct: PropTypes.string,
-  onSelect: PropTypes.func.isRequired,
-  onAdd: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
 };
 
 CartTable.propTypes = {
@@ -424,7 +397,5 @@ CartTotals.propTypes = {
   onRecalculate: PropTypes.func.isRequired,
   recalculating: PropTypes.bool,
 };
-
-CartPage.propTypes = {};
 
 export default CartPage;
