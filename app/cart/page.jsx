@@ -28,7 +28,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-[#D9E5E7] bg-[#F2F7F8]">
-          {["Product", "Code", "MRP", "Selling Price", "Qty", "Subtotal", ""].map((h) => (
+          {["Product", "Code", "MRP", "Selling Price","Discount", "Qty", "Subtotal", ""].map((h) => (
             <th key={h} className="px-4 py-3 text-left font-semibold text-red-700">
               {h}
             </th>
@@ -38,7 +38,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
       <tbody>
         {entries.length === 0 ? (
           <tr>
-            <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+            <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
               No items yet — select a product above to begin.
             </td>
           </tr>
@@ -49,6 +49,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
               <td className="px-4 py-3 text-gray-500 font-mono text-xs">{entry.identifier}</td>
               <td className="px-4 py-3 text-gray-400 line-through">{currency(entry.mrp)}</td>
               <td className="px-4 py-3 text-gray-700">{currency(entry.sellingPrice)}</td>
+              <td className="px-4 py-3 text-gray-700">{currency(entry.discount)}</td>
               <td className="px-4 py-3">
                 <input
                   type="number"
