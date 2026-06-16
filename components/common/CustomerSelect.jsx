@@ -1,5 +1,6 @@
 "use client";
 
+import PropTypes from "prop-types";
 import AsyncSelect from "react-select/async";
 import api from "@/services/api";
 
@@ -30,6 +31,11 @@ const CustomerSelect = ({ value, onChange }) => {
       isClearable
     />
   );
+};
+
+CustomerSelect.propTypes = {
+  value: PropTypes.object,
+  onChange: PropTypes.func.isRequired,
 };
 
 export default CustomerSelect;

@@ -2,6 +2,7 @@
 
 import AsyncSelect from "react-select/async";
 import api from "@/services/api";
+import PropTypes from "prop-types";
 
 const ProductSelect = ({ value, onChange }) => {
   const loadOptions = async (inputValue) => {
@@ -66,6 +67,16 @@ const ProductSelect = ({ value, onChange }) => {
       }}
     />
   );
+};
+
+ProductSelect.propTypes = {
+  value: PropTypes.any,
+  onChange: PropTypes.func,
+};
+
+ProductSelect.defaultProps = {
+  value: null,
+  onChange: () => {},
 };
 
 export default ProductSelect;

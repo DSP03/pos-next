@@ -51,6 +51,24 @@ const TextField = ({ f, value, onChange, error }) => (
     <FieldError error={error} />
   </div>
 );
+TextField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    type: PropTypes.string.isRequired,
+    placeholder: PropTypes.string,
+    disabled: PropTypes.bool,
+    required: PropTypes.bool,
+    inputMode: PropTypes.string,
+    maxLength: PropTypes.number,
+    min: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    max: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    step: PropTypes.number,
+  }).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
 
 const TextareaField = ({ f, value, onChange, error }) => (
   <div>
@@ -67,6 +85,20 @@ const TextareaField = ({ f, value, onChange, error }) => (
     <FieldError error={error} />
   </div>
 );
+
+TextareaField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    placeholder: PropTypes.string,
+    disabled: PropTypes.bool,
+    required: PropTypes.bool,
+    rows: PropTypes.number,
+  }).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
 
 const SelectField = ({ f, value, onChange, options, error }) => (
   <div>
@@ -89,6 +121,30 @@ const SelectField = ({ f, value, onChange, options, error }) => (
   </div>
 );
 
+SelectField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    placeholder: PropTypes.string,
+    disabled: PropTypes.bool,
+    required: PropTypes.bool,
+    options: PropTypes.array,
+  }).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func.isRequired,
+  options: PropTypes.oneOfType([
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        identifier: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        label: PropTypes.string,
+      })
+    ),
+    PropTypes.object,
+  ]),
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
+
 const StatusField = ({ f, value, onDirectChange, error }) => (
   <div>
     <FieldLabel label={f.label} required={f.required} />
@@ -104,6 +160,21 @@ const StatusField = ({ f, value, onDirectChange, error }) => (
     <FieldError error={error} />
   </div>
 );
+
+StatusField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    required: PropTypes.bool,
+  }).isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ]),
+  onDirectChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
 
 const MulticheckField = ({ f, value, onToggle, options, error }) => (
   <div>
@@ -127,6 +198,28 @@ const MulticheckField = ({ f, value, onToggle, options, error }) => (
     <FieldError error={error} />
   </div>
 );
+
+MulticheckField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    required: PropTypes.bool,
+    options: PropTypes.array,
+  }).isRequired,
+  value: PropTypes.oneOfType([PropTypes.array, PropTypes.string, PropTypes.number]),
+  onToggle: PropTypes.func.isRequired,
+  options: PropTypes.oneOfType([
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        identifier: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        label: PropTypes.string,
+      })
+    ),
+    PropTypes.object,
+  ]),
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
 
 const RadioField = ({ f, value, onChange, error }) => (
   <div>
@@ -153,6 +246,18 @@ const RadioField = ({ f, value, onChange, error }) => (
   </div>
 );
 
+RadioField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    required: PropTypes.bool,
+    options: PropTypes.array,
+  }).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
+
 const CheckboxField = ({ f, value, onDirectChange, error }) => (
   <div className="flex items-start gap-2 pt-1">
     <input
@@ -173,6 +278,21 @@ const CheckboxField = ({ f, value, onDirectChange, error }) => (
   </div>
 );
 
+CheckboxField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    required: PropTypes.bool,
+  }).isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ]),
+  onDirectChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
+
 const DateField = ({ f, value, onChange, error }) => (
   <div>
     <FieldLabel label={f.label} required={f.required} />
@@ -189,6 +309,20 @@ const DateField = ({ f, value, onChange, error }) => (
     <FieldError error={error} />
   </div>
 );
+
+DateField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    disabled: PropTypes.bool,
+    required: PropTypes.bool,
+    min: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    max: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
 
 const FileField = ({ f, onDirectChange, error }) => (
   <div>
@@ -209,6 +343,19 @@ const FileField = ({ f, onDirectChange, error }) => (
     <FieldError error={error} />
   </div>
 );
+
+FileField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    accept: PropTypes.string,
+    multiple: PropTypes.bool,
+    disabled: PropTypes.bool,
+    required: PropTypes.bool,
+  }).isRequired,
+  onDirectChange: PropTypes.func.isRequired,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+};
 
 const SectionField = ({ f, form, setForm, options, errors }) => {
   const nestedForm = form[f.name] ?? {};
@@ -246,6 +393,18 @@ const SectionField = ({ f, form, setForm, options, errors }) => {
       />
     </div>
   );
+};
+
+SectionField.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    fields: PropTypes.array,
+  }).isRequired,
+  form: PropTypes.object.isRequired,
+  setForm: PropTypes.func.isRequired,
+  options: PropTypes.object,
+  errors: PropTypes.object,
 };
 
 const FormRenderer = ({
