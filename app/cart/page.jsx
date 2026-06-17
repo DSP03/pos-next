@@ -23,15 +23,70 @@ const Field = ({ label, children }) => (
   </div>
 );
 
+// Isolated row so each qty input has its own draft state
+const CartRow = ({ entry, index, onQtyChange, onRemove }) => {
+  const [draft, setDraft] = useState(String(entry.quantity));
+
+  // Keep draft in sync if parent refreshes entries (e.g. after API call)
+  useEffect(() => {
+    setDraft(String(entry.quantity));
+  }, [entry.quantity]);
+
+  const commit = (val) => {
+    const parsed = Number(val);
+    if (parsed >= 1) {
+      onQtyChange(index, parsed);
+    } else {
+      // Reset to last known good value
+      setDraft(String(entry.quantity));
+    }
+  };
+
+  return (
+    <tr className="border-b border-[#D9E5E7] hover:bg-red-50">
+      <td className="px-4 py-3 font-medium text-gray-900">{entry.productId}</td>
+      <td className="px-4 py-3 text-gray-500 font-mono text-xs">{entry.identifier}</td>
+      <td className="px-4 py-3 text-gray-400 line-through">{currency(entry.mrp)}</td>
+      <td className="px-4 py-3 text-gray-700">{currency(entry.sellingPrice)}</td>
+      <td className="px-4 py-3 text-green-600 font-medium">{currency(entry.discount)}</td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onQtyChange(index, entry.quantity - 1)}
+            className="w-6 h-6 rounded-full border border-[#D9E5E7] flex items-center justify-center text-gray-500 hover:bg-red-50 hover:border-red-300 text-xs"
+          >−</button>
+          <input
+            type="number"
+            min={1}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}           // free typing, no validation yet
+            onBlur={() => commit(draft)}                          // validate + save on blur
+            onKeyDown={(e) => { if (e.key === "Enter") { e.target.blur(); } }} // Enter commits too
+            className="w-12 text-center font-medium border border-[#D9E5E7] rounded-lg py-0.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
+          />
+          <button
+            onClick={() => onQtyChange(index, entry.quantity + 1)}
+            className="w-6 h-6 rounded-full border border-[#D9E5E7] flex items-center justify-center text-gray-500 hover:bg-red-50 hover:border-red-300 text-xs"
+          >+</button>
+        </div>
+      </td>
+      <td className="px-4 py-3 font-semibold text-gray-900">{currency(entry.totalPrice)}</td>
+      <td className="px-4 py-3">
+        <button onClick={() => onRemove(index)} title="Remove item" className="text-gray-400 hover:text-red-500 transition-colors">
+          <Trash2 size={16} />
+        </button>
+      </td>
+    </tr>
+  );
+};
+
 const CartTable = ({ entries, onQtyChange, onRemove }) => (
   <div className="overflow-x-auto rounded-2xl border border-[#D9E5E7] mt-4">
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-[#D9E5E7] bg-[#F2F7F8]">
           {["Product", "Code", "MRP", "Selling Price", "Discount", "Qty", "Subtotal", ""].map((h) => (
-            <th key={h} className="px-4 py-3 text-left font-semibold text-red-700">
-              {h}
-            </th>
+            <th key={h} className="px-4 py-3 text-left font-semibold text-red-700">{h}</th>
           ))}
         </tr>
       </thead>
@@ -44,44 +99,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
           </tr>
         ) : (
           entries.map((entry, i) => (
-            <tr key={entry.identifier ?? i} className="border-b border-[#D9E5E7] hover:bg-red-50">
-              <td className="px-4 py-3 font-medium text-gray-900">{entry.productId}</td>
-              <td className="px-4 py-3 text-gray-500 font-mono text-xs">{entry.identifier}</td>
-              <td className="px-4 py-3 text-gray-400 line-through">{currency(entry.mrp)}</td>
-              <td className="px-4 py-3 text-gray-700">{currency(entry.sellingPrice)}</td>
-              <td className="px-4 py-3 text-green-600 font-medium">{currency(entry.discount)}</td>
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onQtyChange(i, entry.quantity - 1)}
-                    className="w-6 h-6 rounded-full border border-[#D9E5E7] flex items-center justify-center text-gray-500 hover:bg-red-50 hover:border-red-300 text-xs"
-                  >−</button>
-                  <input
-                    type="number"
-                    min={1}
-                    value={entry.quantity}
-                    onChange={(e) => onQtyChange(i, e.target.value)}
-                    className="w-12 text-center font-medium border border-[#D9E5E7] rounded-lg py-0.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
-                  />
-                  <button
-                    onClick={() => onQtyChange(i, entry.quantity + 1)}
-                    className="w-6 h-6 rounded-full border border-[#D9E5E7] flex items-center justify-center text-gray-500 hover:bg-red-50 hover:border-red-300 text-xs"
-                  >+</button>
-                </div>
-              </td>
-              <td className="px-4 py-3 font-semibold text-gray-900">
-                {currency(entry.totalPrice)}
-              </td>
-              <td className="px-4 py-3">
-                <button
-                  onClick={() => onRemove(i)}
-                  title="Remove item"
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </td>
-            </tr>
+            <CartRow key={entry.identifier ?? i} entry={entry} index={i} onQtyChange={onQtyChange} onRemove={onRemove} />
           ))
         )}
       </tbody>
@@ -144,7 +162,7 @@ const CartPage = () => {
   const handleQtyChange = async (index, qty) => {
     const entry = entries[index];
     const parsed = Number(qty);
-    if (!parsed || parsed < 1) return;
+    // validation is handled by CartRow's commit() before this is called
     try {
       await api.post("/cartEntry/update", { ...entry, quantity: parsed });
       await fetchCart(customerId);
@@ -384,6 +402,12 @@ const CartPage = () => {
 };
 
 Field.propTypes = { label: PropTypes.string.isRequired, children: PropTypes.node };
+CartRow.propTypes = {
+  entry: PropTypes.object.isRequired,
+  index: PropTypes.number.isRequired,
+  onQtyChange: PropTypes.func.isRequired,
+  onRemove: PropTypes.func.isRequired,
+};
 CartTable.propTypes = {
   entries: PropTypes.arrayOf(PropTypes.object).isRequired,
   onQtyChange: PropTypes.func.isRequired,
