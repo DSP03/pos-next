@@ -6,7 +6,7 @@ import Layout from "@/components/common/Layout";
 import PageGuard from "@/components/common/PageGuard";
 import FormRenderer from "@/components/common/FormRenderer";
 import api from "@/services/api";
-import { validateCustomer } from "@/app/customer/utils/customerValidator";
+import { validateCustomerWithAddress } from "@/app/customer/utils/customerValidator";
 
 const CUSTOMER_FIELDS = [
   { name: "divider-core", type: "divider", label: "Customer Information" },
@@ -131,7 +131,7 @@ export default function CustomerEdit() {
   }, [identifier]);
 
   const submit = async () => {
-    const err = validateCustomer(form);
+    const err = validateCustomerWithAddress(form);
 
     if (Object.keys(err).length) {
       setErrors(err);

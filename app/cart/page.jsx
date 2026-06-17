@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ShoppingCart, RefreshCw, User } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, User } from "lucide-react";
 import api from "@/services/api";
 import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
@@ -115,7 +115,6 @@ const CartPage = () => {
   const [entries, setEntries] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [recalculating, setRecalculating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -178,15 +177,7 @@ const CartPage = () => {
     } catch { showToast("Failed to remove item"); }
   };
 
-  const handleRecalculate = async () => {
-    if (!customerId) return;
-    setRecalculating(true);
-    try {
-      const res = await api.post(`/cart/recalculate?identifier=${customerId}`);
-      setCartData(res.data);
-      showToast("Totals updated");
-    } catch { showToast("Recalculate failed"); } finally { setRecalculating(false); }
-  };
+
 
   const handleSaveCart = async () => {
     if (!customerId) return;
@@ -288,11 +279,11 @@ const CartPage = () => {
                 {/* Order summary */}
                 <div>
                   <p className="font-semibold text-gray-800 text-base">Order summary</p>
-                  <p className="text-xs text-gray-400 mb-3">{entries.length} item{entries.length !== 1 ? "s" : ""} in cart</p>
+                  <p className="text-xs text-gray-400 mb-3">{entries.length} item{entries.length === 1 ? "" : "s"} in cart</p>
 
                   <div className="space-y-2 text-sm">
-                    {entries.map((e, i) => (
-                      <div key={i} className="flex justify-between text-gray-700">
+                    {entries.map((e) => (
+                      <div key={e.productId} className="flex justify-between text-gray-700">
                         <span>{e.productId} × {e.quantity}</span>
                         <span>{currency(e.totalPrice)}</span>
                       </div>

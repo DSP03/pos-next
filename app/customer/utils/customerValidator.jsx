@@ -1,10 +1,14 @@
 const REQUIRED_ADDRESS_FIELDS = ["addressLine", "city", "state", "zip", "country"];
 
-const validateAddress = (address = {}, errorKey, label) => {
+const validateAddress = (address, errorKey, label) => {
+  address = address || {};
   const missing = REQUIRED_ADDRESS_FIELDS.some((field) => !address[field]?.trim());
   return missing ? { [errorKey]: `All ${label} fields are mandatory` } : {};
 };
 
+// Core fields shared by every customer form: List popup, standalone Add, Edit.
+// Does NOT check billingAddress/shippingAddress — those only matter where the
+// form actually collects them.
 export const validateCustomer = (form) => {
   const errors = {};
 
@@ -32,13 +36,13 @@ export const validateCustomer = (form) => {
 
   if (form.balance === "" || form.balance === null || form.balance === undefined) {
     errors.balance = "Opening balance is required";
-  } else if (isNaN(Number(form.balance)) || Number(form.balance) < 0) {
+  } else if (Number.isNaN(Number(form.balance)) || Number(form.balance) < 0) {
     errors.balance = "Opening balance must be a non-negative number";
   }
 
   if (form.creditLimit === "" || form.creditLimit === null || form.creditLimit === undefined) {
     errors.creditLimit = "Credit limit is required";
-  } else if (isNaN(Number(form.creditLimit)) || Number(form.creditLimit) < 0) {
+  } else if (Number.isNaN(Number(form.creditLimit)) || Number(form.creditLimit) < 0) {
     errors.creditLimit = "Credit limit must be a non-negative number";
   }
 
@@ -46,8 +50,19 @@ export const validateCustomer = (form) => {
     errors.status = "Status is required";
   }
 
+  return errors;
+};
+
+// Address-only validation. Use this on forms that still render
+// billingAddress / shippingAddress sections (currently: Edit).
+export const validateCustomerAddresses = (form) => {
   const billingErrors = validateAddress(form.billingAddress, "billingAddress", "billing address");
   const shippingErrors = validateAddress(form.shippingAddress, "shippingAddress", "shipping address");
-
-  return { ...errors, ...billingErrors, ...shippingErrors };
+  return { ...billingErrors, ...shippingErrors };
 };
+
+// Convenience wrapper for the Edit page: core fields + address fields together.
+export const validateCustomerWithAddress = (form) => ({
+  ...validateCustomer(form),
+  ...validateCustomerAddresses(form),
+});
