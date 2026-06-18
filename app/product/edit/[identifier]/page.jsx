@@ -60,6 +60,7 @@ const ProductEdit = () => {
       fields={[
         {name: "identifier",label: "Identifier",type: "text",disabled: true,},
         {name: "productName",label: "Product Name",type: "text",},
+        {status: "status",label: "Status",type: "status",},
         {name: "brand",label: "Brand",type: "select",},
         {name: "model",label: "Model",type: "select",},
         {name: "unit",label: "Unit",type: "select",},

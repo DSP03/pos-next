@@ -2,19 +2,64 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ShoppingCart, User } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, User, UserPlus } from "lucide-react";
 import api from "@/services/api";
 import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
 import CustomerSelect from "@/components/common/CustomerSelect";
 import ProductSelect from "@/components/common/ProductSelect";
 import PageGuard from "@/components/common/PageGuard";
+import AddModal from "@/components/common/AddModal";
+import FormRenderer from "@/components/common/FormRenderer";
+import { validateCustomer } from "@/app/customer/utils/customerValidator";
 
 const today = () =>
   new Date().toLocaleDateString("en-GB").replaceAll("/", "-");
 
 const currency = (val) =>
   `₹${Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+
+// Quick-add customer form — mirrors the simplified fields used on the
+// customer list popup (no billing/shipping address here either).
+const CUSTOMER_FIELDS = [
+  { name: "divider-core", type: "divider", label: "Customer Information" },
+  { name: "name", type: "text", label: "Full Name", required: true },
+  { name: "phoneNo", type: "phone", label: "Phone Number", required: true },
+  { name: "email", type: "email", label: "Email Address" },
+  {
+    name: "partyType",
+    type: "select",
+    label: "Party Type",
+    options: [
+      { identifier: "individual", label: "Individual" },
+      { identifier: "business", label: "Business" },
+      { identifier: "government", label: "Government" },
+    ],
+  },
+  {
+    name: "balanceType",
+    type: "radio",
+    label: "Balance Type",
+    options: [
+      { identifier: "credit", label: "Credit" },
+      { identifier: "debit", label: "Debit" },
+    ],
+  },
+  { name: "balance", type: "number", label: "Opening Balance" },
+  { name: "creditLimit", type: "number", label: "Credit Limit" },
+  { name: "status", type: "status", label: "Status" },
+];
+
+const CUSTOMER_INITIAL_FORM = {
+  name: "",
+  phoneNo: "",
+  email: "",
+  balance: 0,
+  balanceType: "",
+  partyType: "",
+  creditLimit: 0,
+  status: true,
+};
 
 const Field = ({ label, children }) => (
   <div className="border border-[#D9E5E7] rounded-lg px-4 pt-2 pb-2.5">
@@ -45,7 +90,7 @@ const CartRow = ({ entry, index, onQtyChange, onRemove }) => {
   return (
     <tr className="border-b border-[#D9E5E7] hover:bg-red-50">
       <td className="px-4 py-3 font-medium text-gray-900">{entry.productId}</td>
-      <td className="px-4 py-3 text-gray-500 font-mono text-xs">{entry.identifier}</td>
+      <td className="px-4 py-3 text-gray-500 text-sm">{entry.productName}</td>
       <td className="px-4 py-3 text-gray-400 line-through">{currency(entry.mrp)}</td>
       <td className="px-4 py-3 text-gray-700">{currency(entry.sellingPrice)}</td>
       <td className="px-4 py-3 text-green-600 font-medium">{currency(entry.discount)}</td>
@@ -85,7 +130,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-[#D9E5E7] bg-[#F2F7F8]">
-          {["Product", "Code", "MRP", "Selling Price", "Discount", "Qty", "Subtotal", ""].map((h) => (
+          {["Product","Product Name", "MRP", "Selling Price", "Discount", "Qty", "Subtotal", ""].map((h) => (
             <th key={h} className="px-4 py-3 text-left font-semibold text-red-700">{h}</th>
           ))}
         </tr>
@@ -117,6 +162,12 @@ const CartPage = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
+
+  // --- Quick add-customer modal state ---
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [customerForm, setCustomerForm] = useState(CUSTOMER_INITIAL_FORM);
+  const [customerErrors, setCustomerErrors] = useState({});
+  const [customerSaving, setCustomerSaving] = useState(false);
 
   const customerId = customer?.value ?? null;
   const customerName = customer?.label ?? null;
@@ -177,8 +228,6 @@ const CartPage = () => {
     } catch { showToast("Failed to remove item"); }
   };
 
-
-
   const handleSaveCart = async () => {
     if (!customerId) return;
     setSaving(true);
@@ -199,6 +248,56 @@ const CartPage = () => {
     } catch { showToast("Failed to clear cart"); }
   };
 
+  // --- Quick add-customer handlers ---
+  const openAddCustomer = () => {
+    setCustomerForm(CUSTOMER_INITIAL_FORM);
+    setCustomerErrors({});
+    setShowAddCustomer(true);
+  };
+
+  const closeAddCustomer = () => {
+    setShowAddCustomer(false);
+    setCustomerErrors({});
+  };
+
+  const handleAddCustomerSubmit = async () => {
+    const err = validateCustomer(customerForm);
+    if (Object.keys(err).length) {
+      setCustomerErrors(err);
+      return;
+    }
+
+    try {
+      setCustomerSaving(true);
+      setCustomerErrors({});
+
+      const res = await api.post("/customer/add", customerForm);
+
+      if (res.data && res.data.success === false) {
+        setCustomerErrors({ api: res.data.message || "Failed to save customer." });
+        return;
+      }
+
+      // NOTE: assumes the created customer record (with its identifier) comes
+      // back as res.data, or res.data.data — adjust this line if your
+      // /customer/add response shape is different.
+      const created = res.data?.data ?? res.data ?? {};
+
+      setCustomer({
+        value: created.identifier ?? created.id,
+        label: created.name ?? customerForm.name,
+      });
+
+      setShowAddCustomer(false);
+      showToast("Customer added");
+    } catch (err) {
+      console.error(err);
+      setCustomerErrors({ api: "Server error. Please try again." });
+    } finally {
+      setCustomerSaving(false);
+    }
+  };
+
   const initials = customerName
     ? customerName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : null;
@@ -211,12 +310,22 @@ const CartPage = () => {
 
             {/* Header */}
             <div className="bg-gradient-to-r from-red-700 to-red-500 px-8 py-5 rounded-t-3xl">
-              <div className="flex items-center gap-3">
-                <ShoppingCart size={22} className="text-white" />
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Cart</h2>
-                  <p className="text-red-100 text-xs mt-0.5">Manage customer cart and items</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ShoppingCart size={22} className="text-white" />
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Cart</h2>
+                    <p className="text-red-100 text-xs mt-0.5">Manage customer cart and items</p>
+                  </div>
                 </div>
+
+                <button
+                  onClick={openAddCustomer}
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+                >
+                  <UserPlus size={16} />
+                  Add Customer
+                </button>
               </div>
             </div>
 
@@ -284,7 +393,7 @@ const CartPage = () => {
                   <div className="space-y-2 text-sm">
                     {entries.map((e) => (
                       <div key={e.productId} className="flex justify-between text-gray-700">
-                        <span>{e.productId} × {e.quantity}</span>
+                        <span>{e.productName} × {e.quantity}</span>
                         <span>{currency(e.totalPrice)}</span>
                       </div>
                     ))}
@@ -380,6 +489,29 @@ const CartPage = () => {
 
           </div>
         </div>
+
+        {/* Quick add-customer popup */}
+        <AddModal
+          open={showAddCustomer}
+          title="Add Customer"
+          loading={customerSaving}
+          onClose={closeAddCustomer}
+          onSubmit={handleAddCustomerSubmit}
+        >
+          <FormRenderer
+            fields={CUSTOMER_FIELDS}
+            form={customerForm}
+            setForm={setCustomerForm}
+            errors={customerErrors}
+            columns={2}
+          />
+
+          {customerErrors.api && (
+            <div className="mt-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+              {customerErrors.api}
+            </div>
+          )}
+        </AddModal>
 
         {/* Toast */}
         {toast && (

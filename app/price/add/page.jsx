@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import AddPage from "@/components/common/AddPage";
+import { getPriceTypes } from "@/components/common/DataDropdowns";
 import api from "@/services/api";
 
 export default function PriceAdd() {
@@ -11,29 +12,30 @@ export default function PriceAdd() {
 
   const [options, setOptions] = useState({
     productId: [],
-    priceType: [
-      { identifier: "Selling Price", label: "Selling Price" },
-      { identifier: "Cost Price", label: "Cost Price" },
-      { identifier: "MRP", label: "MRP" },
-    ],
+    priceType: [],
   });
 
   useEffect(() => {
-    loadProducts();
+    loadDropdowns();
   }, []);
 
-  const loadProducts = async () => {
+  const loadDropdowns = async () => {
     try {
-      const res = await api.post("/product/list", {
-        page: 0,
-        sizePerPage: 100,
-      });
+      const [productRes, priceTypes] = await Promise.all([
+        api.post("/product/list", {
+          page: 0,
+          sizePerPage: 100,
+        }),
+        getPriceTypes(),
+      ]);
 
-      setOptions((prev) => ({
-        ...prev,
-        productId: (res.data.dtoList || []).map((p) => ({
-          identifier: p.identifier, label: p.productName, })),
-      }));
+      setOptions({
+        productId: (productRes.data.dtoList || []).map((p) => ({
+          identifier: p.identifier,
+          label: p.productName,
+        })),
+        priceType: priceTypes,
+      });
     } catch (err) {
       console.log(err);
     }
@@ -45,9 +47,21 @@ export default function PriceAdd() {
       modelName="price"
       options={options}
       fields={[
-        {name: "productId",label: "Product",type: "select",},
-        {name: "priceType",label: "Price Type",type: "select",},
-        {name: "value",label: "Value",type: "text",},
+        {
+          name: "productId",
+          label: "Product",
+          type: "select",
+        },
+        {
+          name: "priceType",
+          label: "Price Type",
+          type: "select",
+        },
+        {
+          name: "value",
+          label: "Value",
+          type: "text",
+        },
       ]}
       initialForm={{
         productId: "",

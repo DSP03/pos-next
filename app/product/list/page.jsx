@@ -14,6 +14,7 @@ const ProductList = () => {
         "categories",
         "unit"
       ]}
+      enableToggle={true}
     />
   );
 };
