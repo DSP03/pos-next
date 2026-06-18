@@ -130,7 +130,7 @@ const CartTable = ({ entries, onQtyChange, onRemove }) => (
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-[#D9E5E7] bg-[#F2F7F8]">
-          {["Product","Product Name", "MRP", "Selling Price", "Discount", "Qty", "Subtotal", ""].map((h) => (
+          {["Product","Product Name","MRP", "Selling Price", "Discount", "Qty", "Subtotal", ""].map((h) => (
             <th key={h} className="px-4 py-3 text-left font-semibold text-red-700">{h}</th>
           ))}
         </tr>
@@ -168,6 +168,7 @@ const CartPage = () => {
   const [customerForm, setCustomerForm] = useState(CUSTOMER_INITIAL_FORM);
   const [customerErrors, setCustomerErrors] = useState({});
   const [customerSaving, setCustomerSaving] = useState(false);
+  
 
   const customerId = customer?.value ?? null;
   const customerName = customer?.label ?? null;
@@ -237,7 +238,32 @@ const CartPage = () => {
       showToast("Cart saved");
     } catch { showToast("Failed to save cart"); } finally { setSaving(false); }
   };
+    const handleCheckout = async () => {
+      if (!customerId) return;
 
+      setSaving(true);
+      try {
+        const payload = {
+          customer: customerId, // IMPORTANT: backend uses cartId as identifier
+          paymentMethod: "CASH", // or selected later
+          receivedAmount: cartData?.totalPrice,
+        };
+
+        const res = await api.post("/order/checkout", payload);
+
+        const order = res.data;
+
+        showToast("Order placed successfully");
+
+        // redirect to order page
+        router.push(`/orders/${order.identifier}`);
+      } catch (err) {
+        console.error(err);
+        showToast("Checkout failed");
+      } finally {
+        setSaving(false);
+      }
+    };
   const handleClearCart = async () => {
     if (!customerId) return;
     try {
@@ -457,7 +483,7 @@ const CartPage = () => {
                 {/* Action buttons — pushed to bottom */}
                 <div className="flex flex-col gap-3 mt-auto">
                   <button
-                    onClick={handleSaveCart}
+                    onClick={handleCheckout}
                     disabled={!customerId || saving}
                     className="w-full py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 disabled:opacity-40 transition-all shadow-md text-sm"
                   >
