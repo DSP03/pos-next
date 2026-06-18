@@ -21,7 +21,7 @@ export default function OrdersPage() {
         page: 0,
         sizePerPage: 50,
         sortDirection: "DESC",
-        sortfield: "createdDate",
+        sortfield: "createdOn",
       });
 
       setOrders(res.data?.dtoList || []);
