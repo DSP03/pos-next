@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { ShoppingCart, ClipboardList } from "lucide-react";
 import api from "@/services/api";
 import Layout from "@/components/common/Layout";
 import PageGuard from "@/components/common/PageGuard";
@@ -11,6 +12,7 @@ const currency = (v) =>
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,9 +39,29 @@ export default function OrderDetailsPage() {
           <div className="max-w-5xl mx-auto">
 
             {/* Header */}
-            <div className="bg-red-600 text-white p-5 rounded-2xl mb-6">
-              <h1 className="text-xl font-bold">Order Details</h1>
-              <p className="text-sm">{id}</p>
+            <div className="bg-red-600 text-white p-5 rounded-2xl mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold">Order Details</h1>
+                <p className="text-sm">{id}</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.push("/cart")}
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+                >
+                  <ShoppingCart size={16} />
+                  Cart
+                </button>
+
+                <button
+                  onClick={() => router.push("/orders")}
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+                >
+                  <ClipboardList size={16} />
+                  Orders
+                </button>
+              </div>
             </div>
 
             {loading ? (

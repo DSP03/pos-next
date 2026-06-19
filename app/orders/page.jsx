@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import Layout from "@/components/common/Layout";
+import { ShoppingCart } from "lucide-react";
 import PageGuard from "@/components/common/PageGuard";
 
 const currency = (v) =>
@@ -43,11 +44,22 @@ export default function OrdersPage() {
           <div className="max-w-6xl mx-auto">
 
             {/* Header */}
-            <div className="bg-red-600 text-white p-5 rounded-2xl mb-6">
-              <h1 className="text-xl font-bold">Orders</h1>
-              <p className="text-sm text-red-100">
-                All placed orders
-              </p>
+            {/* Header */}
+            <div className="bg-red-600 text-white p-5 rounded-2xl mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold">Orders</h1>
+                <p className="text-sm text-red-100">
+                  All placed orders
+                </p>
+              </div>
+
+              <button
+                onClick={() => router.push("/cart")}
+                className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+              >
+                <ShoppingCart size={16} />
+                Cart
+              </button>
             </div>
 
             {/* Table */}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ShoppingCart, User, UserPlus } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, User, UserPlus, ClipboardList } from "lucide-react";
 import api from "@/services/api";
 import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
@@ -334,7 +334,7 @@ const CartPage = () => {
         <div className="min-h-screen bg-gray-100 p-6">
           <div className="max-w-7xl mx-auto">
 
-            {/* Header */}
+           {/* Header */}
             <div className="bg-gradient-to-r from-red-700 to-red-500 px-8 py-5 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -345,16 +345,25 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={openAddCustomer}
-                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
-                >
-                  <UserPlus size={16} />
-                  Add Customer
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => router.push("/orders")}
+                    className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+                  >
+                    <ClipboardList size={16} />
+                    Orders
+                  </button>
+
+                  <button
+                    onClick={openAddCustomer}
+                    className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+                  >
+                    <UserPlus size={16} />
+                    Add Customer
+                  </button>
+                </div>
               </div>
             </div>
-
             {/* 70 / 30 grid — both columns same height */}
             <div className="grid grid-cols-[1fr_auto] gap-0 items-stretch">
 
