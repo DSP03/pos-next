@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ShoppingCart, ClipboardList } from "lucide-react";
+import { ShoppingCart, ClipboardList, Printer } from "lucide-react";
 import api from "@/services/api";
 import Layout from "@/components/common/Layout";
 import PageGuard from "@/components/common/PageGuard";
+import { printElement } from "@/utils/print";
+import { STORE } from "@/config/store";
 
 const currency = (v) =>
   `₹${Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
@@ -15,6 +17,7 @@ export default function OrderDetailsPage() {
   const router = useRouter();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const printRef = useRef(null);
 
   const fetchOrder = async () => {
     setLoading(true);
@@ -32,6 +35,10 @@ export default function OrderDetailsPage() {
     if (id) fetchOrder();
   }, [id]);
 
+  const handlePrint = () => {
+    printElement(printRef, { title: `Invoice ${id}` });
+  };
+
   return (
     <PageGuard>
       <Layout>
@@ -46,6 +53,15 @@ export default function OrderDetailsPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrint}
+                  disabled={!order}
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-40"
+                >
+                  <Printer size={16} />
+                  Print
+                </button>
+
                 <button
                   onClick={() => router.push("/cart")}
                   className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
@@ -69,7 +85,42 @@ export default function OrderDetailsPage() {
             ) : !order ? (
               <p className="text-center text-gray-400">Order not found</p>
             ) : (
-              <div className="bg-white p-6 rounded-2xl border space-y-6">
+              <div ref={printRef} className="bg-white p-6 rounded-2xl border space-y-6">
+
+                {/* STORE / BILL HEADER */}
+                <div className="text-center border-b pb-4">
+                  {STORE.logoUrl && (
+                    <img src={STORE.logoUrl} alt={STORE.name} className="h-12 mx-auto mb-2" />
+                  )}
+                  <h2 className="text-xl font-bold uppercase tracking-wide">{STORE.name}</h2>
+                  <p className="text-xs text-gray-500">{STORE.addressLine1}</p>
+                  <p className="text-xs text-gray-500">{STORE.addressLine2}</p>
+                  <p className="text-xs text-gray-500">
+                    {STORE.phone && `Ph: ${STORE.phone}`}
+                    {STORE.email && ` | ${STORE.email}`}
+                  </p>
+                  {STORE.gstin && (
+                    <p className="text-xs text-gray-500">GSTIN: {STORE.gstin}</p>
+                  )}
+                  <p className="mt-3 text-sm font-semibold tracking-widest uppercase">
+                    Tax Invoice
+                  </p>
+                </div>
+
+                {/* INVOICE META */}
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>
+                    Invoice No: <span className="font-semibold text-gray-800">{id}</span>
+                  </span>
+                  <span>
+                    Date:{" "}
+                    <span className="font-semibold text-gray-800">
+                      {order.createdOn
+                        ? new Date(order.createdOn).toLocaleDateString("en-GB")
+                        : new Date().toLocaleDateString("en-GB")}
+                    </span>
+                  </span>
+                </div>
 
                 {/* ORDER HEADER */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -143,6 +194,14 @@ export default function OrderDetailsPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* BILL FOOTER */}
+                <div className="border-t pt-4 text-center text-xs text-gray-400">
+                  <p>Thank you for shopping with us!</p>
+                  <p className="mt-1">
+                    This is a computer-generated invoice and does not require a signature.
+                  </p>
                 </div>
 
               </div>
