@@ -202,7 +202,7 @@ export default function OrderDetailsPage() {
                     This is a computer-generated invoice and does not require a signature.
                   </p>
                 </div>
-
+              </div>
               );
             })()}
           </div>
