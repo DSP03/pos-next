@@ -52,6 +52,47 @@ export default function OrdersPage() {
   const rangeStart = page * SIZE_PER_PAGE + 1;
   const rangeEnd = Math.min(totalRecords, rangeStart + orders.length - 1);
 
+  let orderRows;
+
+  if (loading) {
+    orderRows = (
+      <tr>
+        <td colSpan="7" className="p-6 text-center text-gray-400">
+          Loading...
+        </td>
+      </tr>
+    );
+  } else if (orders.length === 0) {
+    orderRows = (
+      <tr>
+        <td colSpan="7" className="p-6 text-center text-gray-400">
+          No orders found
+        </td>
+      </tr>
+    );
+  } else {
+    orderRows = orders.map((o) => (
+      <tr key={o.identifier} className="border-t hover:bg-gray-50">
+        <td className="p-3 font-mono text-xs">{o.identifier}</td>
+        <td className="p-3">{o.customer}</td>
+        <td className="p-3">{o.paymentMethod}</td>
+        <td className="p-3 font-semibold">{currency(o.totalPrice)}</td>
+        <td className="p-3">{currency(o.receivedAmount)}</td>
+        <td className="p-3 text-green-600">
+          {currency(o.changeAmount)}
+        </td>
+        <td className="p-3">
+          <button
+            onClick={() => router.push(`/orders/${o.identifier}`)}
+            className="text-red-600 hover:underline"
+          >
+            View
+          </button>
+        </td>
+      </tr>
+    ));
+  }
+
   return (
     <PageGuard>
       <Layout>
@@ -92,40 +133,7 @@ export default function OrdersPage() {
                 </thead>
 
                 <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan="7" className="p-6 text-center text-gray-400">
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : orders.length === 0 ? (
-                    <tr>
-                      <td colSpan="7" className="p-6 text-center text-gray-400">
-                        No orders found
-                      </td>
-                    </tr>
-                  ) : (
-                    orders.map((o) => (
-                      <tr key={o.identifier} className="border-t hover:bg-gray-50">
-                        <td className="p-3 font-mono text-xs">{o.identifier}</td>
-                        <td className="p-3">{o.customer}</td>
-                        <td className="p-3">{o.paymentMethod}</td>
-                        <td className="p-3 font-semibold">{currency(o.totalPrice)}</td>
-                        <td className="p-3">{currency(o.receivedAmount)}</td>
-                        <td className="p-3 text-green-600">
-                          {currency(o.changeAmount)}
-                        </td>
-                        <td className="p-3">
-                          <button
-                            onClick={() => router.push(`/orders/${o.identifier}`)}
-                            className="text-red-600 hover:underline"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  {orderRows}
                 </tbody>
               </table>
 

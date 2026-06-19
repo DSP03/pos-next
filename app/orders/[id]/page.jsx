@@ -80,12 +80,11 @@ export default function OrderDetailsPage() {
               </div>
             </div>
 
-            {loading ? (
-              <p className="text-center text-gray-400">Loading...</p>
-            ) : !order ? (
-              <p className="text-center text-gray-400">Order not found</p>
-            ) : (
-              <div ref={printRef} className="bg-white p-6 rounded-2xl border space-y-6">
+            {(() => {
+              if (loading) return <p className="text-center text-gray-400">Loading...</p>;
+              if (!order) return <p className="text-center text-gray-400">Order not found</p>;
+              return (
+                <div ref={printRef} className="bg-white p-6 rounded-2xl border space-y-6">
 
                 {/* STORE / BILL HEADER */}
                 <div className="text-center border-b pb-4">
@@ -204,8 +203,8 @@ export default function OrderDetailsPage() {
                   </p>
                 </div>
 
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </Layout>

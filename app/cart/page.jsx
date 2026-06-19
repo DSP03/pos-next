@@ -240,16 +240,6 @@ const CartPage = () => {
     } catch { showToast("Failed to remove item"); }
   };
 
-  const handleSaveCart = async () => {
-    if (!customerId) return;
-    setSaving(true);
-    try {
-      const res = await api.post(`/cart/recalculate?identifier=${customerId}`);
-      setCartData(res.data);
-      showToast("Cart saved");
-    } catch { showToast("Failed to save cart"); } finally { setSaving(false); }
-  };
-
   const handleClearCart = async () => {
     if (!customerId) return;
     try {
@@ -351,8 +341,8 @@ const CartPage = () => {
 
       const res = await api.post("/customer/add", customerForm);
 
-      if (res.data && res.data.success === false) {
-        setCustomerErrors({ api: res.data.message || "Failed to save customer." });
+      if (res.data?.success === false) {
+        setCustomerErrors({ api: res.data?.message || "Failed to save customer." });
         return;
       }
 
