@@ -4,28 +4,37 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import Layout from "@/components/common/Layout";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import PageGuard from "@/components/common/PageGuard";
 
 const currency = (v) =>
   `₹${Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+
+const SIZE_PER_PAGE = 5;
 
 export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchOrders = async () => {
+  // --- Pagination state, driven by the WsDto fields the backend already returns ---
+  const [page, setPage] = useState(0); // backend is 0-indexed
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  const fetchOrders = async (pageToFetch) => {
     setLoading(true);
     try {
       const res = await api.post("/order/list", {
-        page: 0,
-        sizePerPage: 50,
+        page: pageToFetch,
+        sizePerPage: SIZE_PER_PAGE,
         sortDirection: "DESC",
         sortfield: "createdOn",
       });
 
       setOrders(res.data?.dtoList || []);
+      setTotalPages(res.data?.totalPages ?? 0);
+      setTotalRecords(res.data?.totalRecords ?? 0);
     } catch (err) {
       console.error("Order list error:", err);
     } finally {
@@ -34,8 +43,14 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(page);
+  }, [page]);
+
+  const goToPrevious = () => setPage((p) => Math.max(0, p - 1));
+  const goToNext = () => setPage((p) => Math.min(totalPages - 1, p + 1));
+
+  const rangeStart = page * SIZE_PER_PAGE + 1;
+  const rangeEnd = Math.min(totalRecords, rangeStart + orders.length - 1);
 
   return (
     <PageGuard>
@@ -43,7 +58,6 @@ export default function OrdersPage() {
         <div className="min-h-screen bg-gray-100 p-6">
           <div className="max-w-6xl mx-auto">
 
-            {/* Header */}
             {/* Header */}
             <div className="bg-red-600 text-white p-5 rounded-2xl mb-6 flex items-center justify-between">
               <div>
@@ -114,6 +128,39 @@ export default function OrdersPage() {
                   )}
                 </tbody>
               </table>
+
+              {/* Pagination footer */}
+              {!loading && totalRecords > 0 && (
+                <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-500">
+                  <span>
+                    Showing {rangeStart}–{rangeEnd} of {totalRecords}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={goToPrevious}
+                      disabled={page === 0}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft size={14} />
+                      Prev
+                    </button>
+
+                    <span className="text-gray-700 font-medium">
+                      Page {page + 1} of {Math.max(totalPages, 1)}
+                    </span>
+
+                    <button
+                      onClick={goToNext}
+                      disabled={page + 1 >= totalPages}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
