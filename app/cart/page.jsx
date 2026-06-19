@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ShoppingCart, User, UserPlus, ClipboardList } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, User, UserPlus, ClipboardList, Banknote, CreditCard, Smartphone } from "lucide-react";
 import api from "@/services/api";
 import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
@@ -18,6 +18,12 @@ const today = () =>
 
 const currency = (val) =>
   `₹${Number(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+
+const PAYMENT_METHODS = [
+  { id: "CASH", label: "Cash", icon: Banknote },
+  { id: "CARD", label: "Card", icon: CreditCard },
+  { id: "UPI", label: "UPI", icon: Smartphone },
+];
 
 // Quick-add customer form — mirrors the simplified fields used on the
 // customer list popup (no billing/shipping address here either).
@@ -168,7 +174,12 @@ const CartPage = () => {
   const [customerForm, setCustomerForm] = useState(CUSTOMER_INITIAL_FORM);
   const [customerErrors, setCustomerErrors] = useState({});
   const [customerSaving, setCustomerSaving] = useState(false);
-  
+
+  // --- Payment modal state ---
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [receivedAmount, setReceivedAmount] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
   const customerId = customer?.value ?? null;
   const customerName = customer?.label ?? null;
@@ -238,32 +249,7 @@ const CartPage = () => {
       showToast("Cart saved");
     } catch { showToast("Failed to save cart"); } finally { setSaving(false); }
   };
-    const handleCheckout = async () => {
-      if (!customerId) return;
 
-      setSaving(true);
-      try {
-        const payload = {
-          customer: customerId, // IMPORTANT: backend uses cartId as identifier
-          paymentMethod: "CASH", // or selected later
-          receivedAmount: cartData?.totalPrice,
-        };
-
-        const res = await api.post("/order/checkout", payload);
-
-        const order = res.data;
-
-        showToast("Order placed successfully");
-
-        // redirect to order page
-        router.push(`/orders/${order.identifier}`);
-      } catch (err) {
-        console.error(err);
-        showToast("Checkout failed");
-      } finally {
-        setSaving(false);
-      }
-    };
   const handleClearCart = async () => {
     if (!customerId) return;
     try {
@@ -272,6 +258,72 @@ const CartPage = () => {
       setCartData(null);
       showToast("Cart cleared");
     } catch { showToast("Failed to clear cart"); }
+  };
+
+  // --- Payment / checkout handlers ---
+  const openPaymentModal = () => {
+    if (!customerId || entries.length === 0) return;
+    setPaymentMethod("CASH");
+    setReceivedAmount(String(cartData?.totalPrice ?? 0));
+    setPaymentError("");
+    setShowPayment(true);
+  };
+
+  const closePaymentModal = () => {
+    setShowPayment(false);
+    setPaymentError("");
+  };
+
+  // Card/UPI are assumed to be charged for the exact amount —
+  // only Cash needs a received amount typed in (to compute change).
+  const selectPaymentMethod = (id) => {
+    setPaymentMethod(id);
+    if (id !== "CASH") {
+      setReceivedAmount(String(cartData?.totalPrice ?? 0));
+    }
+    setPaymentError("");
+  };
+
+  const total = cartData?.totalPrice ?? 0;
+  const changeDue = Math.max(0, Number(receivedAmount || 0) - Number(total || 0));
+
+  const confirmCheckout = async () => {
+    if (!customerId) return;
+
+    const received = Number(receivedAmount);
+
+    if (paymentMethod === "CASH" && (Number.isNaN(received) || received < total)) {
+      setPaymentError("Received amount must be at least the total payable.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        customer: customerId, // IMPORTANT: backend uses cartId as identifier
+        paymentMethod,
+        receivedAmount: paymentMethod === "CASH" ? received : total,
+      };
+
+      const res = await api.post("/order/checkout", payload);
+      const order = res.data;
+
+      if (order?.success === false) {
+        setPaymentError(order.message || "Checkout failed");
+        return;
+      }
+
+      setShowPayment(false);
+      showToast("Order placed successfully");
+
+      // redirect to order page
+      router.push(`/orders/${order.identifier}`);
+    } catch (err) {
+      console.error(err);
+      setPaymentError("Checkout failed. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   // --- Quick add-customer handlers ---
@@ -334,7 +386,7 @@ const CartPage = () => {
         <div className="min-h-screen bg-gray-100 p-6">
           <div className="max-w-7xl mx-auto">
 
-           {/* Header */}
+            {/* Header */}
             <div className="bg-gradient-to-r from-red-700 to-red-500 px-8 py-5 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -364,6 +416,7 @@ const CartPage = () => {
                 </div>
               </div>
             </div>
+
             {/* 70 / 30 grid — both columns same height */}
             <div className="grid grid-cols-[1fr_auto] gap-0 items-stretch">
 
@@ -492,16 +545,11 @@ const CartPage = () => {
                 {/* Action buttons — pushed to bottom */}
                 <div className="flex flex-col gap-3 mt-auto">
                   <button
-                    onClick={handleCheckout}
-                    disabled={!customerId || saving}
+                    onClick={openPaymentModal}
+                    disabled={!customerId || entries.length === 0 || saving}
                     className="w-full py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 disabled:opacity-40 transition-all shadow-md text-sm"
                   >
-                    {saving ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Saving...
-                      </div>
-                    ) : "Checkout"}
+                    Checkout
                   </button>
                   <button
                     onClick={handleClearCart}
@@ -546,6 +594,73 @@ const CartPage = () => {
               {customerErrors.api}
             </div>
           )}
+        </AddModal>
+
+        {/* Payment popup */}
+        <AddModal
+          open={showPayment}
+          title="Payment"
+          loading={saving}
+          onClose={closePaymentModal}
+          onSubmit={confirmCheckout}
+          submitLabel="Confirm & Place Order"
+        >
+          <div className="space-y-4">
+
+            <div className="flex justify-between items-center bg-[#F2F7F8] border border-[#D9E5E7] rounded-xl px-4 py-3">
+              <span className="text-sm text-gray-500">Total payable</span>
+              <span className="text-lg font-bold text-gray-900">{currency(total)}</span>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500 mb-2">Payment Method</p>
+              <div className="grid grid-cols-3 gap-2">
+                {PAYMENT_METHODS.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => selectPaymentMethod(id)}
+                    className={`flex flex-col items-center gap-1 py-3 rounded-xl border text-sm font-medium transition-colors ${
+                      paymentMethod === id
+                        ? "border-red-500 bg-red-50 text-red-700"
+                        : "border-[#D9E5E7] text-gray-500 hover:border-red-300"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {paymentMethod === "CASH" && (
+              <div className="border border-[#D9E5E7] rounded-lg px-4 pt-2 pb-2.5">
+                <p className="text-xs text-gray-500 mb-1">Received Amount</p>
+                <input
+                  type="number"
+                  min={0}
+                  value={receivedAmount}
+                  onChange={(e) => { setReceivedAmount(e.target.value); setPaymentError(""); }}
+                  className="w-full font-medium border-none focus:outline-none focus:ring-0 text-sm"
+                  placeholder="Enter amount received"
+                />
+              </div>
+            )}
+
+            {paymentMethod === "CASH" && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Change to return</span>
+                <span className="font-semibold text-green-600">{currency(changeDue)}</span>
+              </div>
+            )}
+
+            {paymentError && (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+                {paymentError}
+              </div>
+            )}
+
+          </div>
         </AddModal>
 
         {/* Toast */}
