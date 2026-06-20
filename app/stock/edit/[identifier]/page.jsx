@@ -16,6 +16,10 @@ const StockEditPage = () => {
         availableQuantity: 0,
         reorderLevel: 0,
         status: true,
+        createdBy: "",
+        createdOn: "",
+        modifiedBy: "",
+        modifiedOn: "",
       }}
       fields={[
         {
@@ -45,6 +49,30 @@ const StockEditPage = () => {
           name: "status",
           type: "checkbox",
           label: "Active",
+        },
+        {
+          name: "createdBy",
+          type: "text",
+          label: "Created By",
+          disabled: true,
+        },
+        {
+          name: "createdOn",
+          type: "text",
+          label: "Created On",
+          disabled: true,
+        },
+        {
+          name: "modifiedBy",
+          type: "text",
+          label: "Modified By",
+          disabled: true,
+        },
+        {
+          name: "modifiedOn",
+          type: "text",
+          label: "Modified On",
+          disabled: true,
         },
       ]}
       readOnlyFields={[

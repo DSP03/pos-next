@@ -1,6 +1,6 @@
 "use client";
 
-import ListPage from "@/components/common/ListPage";
+import ListPage from "@/components/common/CommonListPage";
 
 export default function BrandList() {
   return (

@@ -8,6 +8,12 @@ import api from "../../services/api";
 import FormRenderer from "@/components/common/FormRenderer";
 import PageGuard from "./PageGuard";
 
+const formatDateTime = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? value : date.toLocaleString();
+};
+
 const EditPage = ({
   modelName,
   title,
@@ -17,6 +23,8 @@ const EditPage = ({
   validate,
   readOnlyFields = [],
   backPath,
+  skipFetch = false,
+  excludeFromSubmit = ["createdBy", "createdOn", "modifiedBy", "modifiedOn"],
 }) => {
   const router = useRouter();
   const params = useParams();
@@ -26,7 +34,7 @@ const EditPage = ({
 
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(!skipFetch);
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -38,7 +46,7 @@ const EditPage = ({
   const pageTitle = title || `Edit ${displayName}`;
 
   useEffect(() => {
-    if (!identifier || !modelName) {
+    if (skipFetch || !identifier || !modelName) {
       setForm(initialForm);
       setDataLoading(false);
       return;
@@ -49,14 +57,19 @@ const EditPage = ({
       .get(`/${modelName}/get`, { params: { identifier } })
       .then((res) => {
         if (res.data?.success === true) {
-          setForm(res.data || initialForm);
+          const data = res.data || initialForm;
+          setForm({
+            ...data,
+            createdOn: formatDateTime(data.createdOn),
+            modifiedOn: formatDateTime(data.modifiedOn),
+          });
         } else {
           setError(res.data?.message || "Failed to load data");
         }
       })
       .catch(() => setError("Failed to load data"))
       .finally(() => setDataLoading(false));
-  }, [identifier, modelName]);
+  }, [identifier, modelName, skipFetch]);
 
   const handleSubmit = async () => {
     setError("");
@@ -77,16 +90,20 @@ const EditPage = ({
       }
     }
 
+    const payload = { ...form };
+    excludeFromSubmit.forEach((key) => delete payload[key]);
+
     setLoading(true);
     try {
-      const res = await api.post(`/${modelName}/update`, form);
+      const res = await api.post(`/${modelName}/update`, payload);
       if (res.data?.success === false) {
         setError(res.data.message || "Update failed");
         return;
       }
       setSuccess("Updated successfully");
       setTimeout(() => router.push(resolvedBackPath), 700);
-    } catch {
+    } catch (err) {
+      console.error(`Update failed for ${modelName}:`, err.response?.data || err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -207,6 +224,8 @@ EditPage.propTypes = {
   validate: PropTypes.func,
   readOnlyFields: PropTypes.arrayOf(PropTypes.string),
   backPath: PropTypes.string,
+  skipFetch: PropTypes.bool,
+  excludeFromSubmit: PropTypes.arrayOf(PropTypes.string),
 };
 
 EditPage.defaultProps = {
@@ -214,6 +233,8 @@ EditPage.defaultProps = {
   options: {},
   initialForm: {},
   readOnlyFields: [],
+  skipFetch: false,
+  excludeFromSubmit: ["createdBy", "createdOn", "modifiedBy", "modifiedOn"],
 };
 
 export default EditPage;
