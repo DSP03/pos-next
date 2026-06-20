@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/services/api";
 import Layout from "@/components/common/Layout";
-import { ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import PageGuard from "@/components/common/PageGuard";
 
 const currency = (v) =>
@@ -21,6 +21,7 @@ export default function OrdersPage() {
   const [page, setPage] = useState(0); // backend is 0-indexed
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [search, setSearch] = useState("");
 
   const fetchOrders = async (pageToFetch) => {
     setLoading(true);
@@ -43,7 +44,10 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    fetchOrders(page);
+    // Only drive the normal paginated fetch when there's no active search term.
+    if (!search.trim()) {
+      fetchOrders(page);
+    }
   }, [page]);
 
   const goToPrevious = () => setPage((p) => Math.max(0, p - 1));
@@ -51,6 +55,48 @@ export default function OrdersPage() {
 
   const rangeStart = page * SIZE_PER_PAGE + 1;
   const rangeEnd = Math.min(totalRecords, rangeStart + orders.length - 1);
+
+  const searchOrders = async (value) => {
+    try {
+      if (!value.trim()) {
+        fetchOrders(page);
+        return;
+      }
+
+      setLoading(true);
+      const res = await api.get("/order/search", {
+        params: {
+          query: value,
+        },
+      });
+
+      setOrders(res.data || []);
+    } catch (err) {
+      console.error("Search error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Debounce search input so we don't fire a request on every keystroke
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      searchOrders(search);
+    }, 350);
+
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearch("");
+  };
+
+  const isSearching = search.trim().length > 0;
 
   let orderRows;
 
@@ -66,7 +112,7 @@ export default function OrdersPage() {
     orderRows = (
       <tr>
         <td colSpan="7" className="p-6 text-center text-gray-400">
-          No orders found
+          {isSearching ? "No orders match your search" : "No orders found"}
         </td>
       </tr>
     );
@@ -117,6 +163,32 @@ export default function OrdersPage() {
               </button>
             </div>
 
+            {/* Search */}
+            <div className="bg-white border rounded-2xl mb-6 p-3">
+              <div className="relative">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={handleSearchChange}
+                  placeholder="Search by order ID or customer"
+                  className="w-full pl-9 pr-9 py-2 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400"
+                />
+                {search && (
+                  <button
+                    onClick={clearSearch}
+                    aria-label="Clear search"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Table */}
             <div className="bg-white border rounded-2xl overflow-hidden">
               <table className="w-full text-sm">
@@ -137,8 +209,8 @@ export default function OrdersPage() {
                 </tbody>
               </table>
 
-              {/* Pagination footer */}
-              {!loading && totalRecords > 0 && (
+              {/* Pagination footer (hidden during search since /order/search isn't paginated) */}
+              {!loading && !isSearching && totalRecords > 0 && (
                 <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-500">
                   <span>
                     Showing {rangeStart}–{rangeEnd} of {totalRecords}
@@ -167,6 +239,13 @@ export default function OrdersPage() {
                       <ChevronRight size={14} />
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Result count during search */}
+              {!loading && isSearching && (
+                <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-500">
+                  <span>{orders.length} result{orders.length === 1 ? "" : "s"} for "{search}"</span>
                 </div>
               )}
             </div>
