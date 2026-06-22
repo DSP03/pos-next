@@ -1,60 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import EditPage from "@/components/common/EditPage";
-import api from "@/services/api";
 
 export default function BrandEdit() {
-
-  const { identifier } = useParams();
   const router = useRouter();
-  const [initialForm, setInitialForm] = useState(null);
-
-  useEffect(() => {
-
-    if (identifier) {
-      loadBrand();
-    }
-
-  }, [identifier]);
-
-  const loadBrand = async () => {
-
-    try {
-
-      const res = await api.get(
-        `/brand/get?identifier=${identifier}`
-      );
-
-      setInitialForm({
-        identifier: res.data.identifier || "",
-        brandName: res.data.brandName || "",
-        description: res.data.description || "",
-        status: res.data.status ?? true
-      });
-
-    } catch (err) {
-
-      console.error(err);
-
-    }
-  };
 
   const fields = [
-    {name: "identifier",label: "Identifier",type: "text",disabled: true},
-    {name: "brandName",label: "Brand Name",type: "text",disabled: true},
-    {name: "description",label: "Description",type: "textarea"},
-    {name: "status",label: "Status",type: "status"}
+    { name: "identifier", label: "Identifier", type: "text", disabled: true },
+    { name: "brandName", label: "Brand Name", type: "text", disabled: true },
+    { name: "description", label: "Description", type: "textarea" },
+    { name: "status", label: "Status", type: "status" },
+    { name: "createdBy", label: "Created By", type: "text", disabled: true },
+    { name: "createdOn", label: "Created On", type: "text", disabled: true },
+    { name: "modifiedBy", label: "Modified By", type: "text", disabled: true },
+    { name: "modifiedOn", label: "Modified On", type: "text", disabled: true },
   ];
 
   const validate = (form) => {
-
     if (!form.brandName?.trim()) {
       return "Brand Name is required";
     }
-
     return null;
   };
 
@@ -63,10 +30,8 @@ export default function BrandEdit() {
       title="Edit Brand"
       modelName="brand"
       fields={fields}
-      initialForm={initialForm}
       validate={validate}
-      onSuccess={() => router.push("/brand/list")}
-      onCancel={() => router.push("/brand/list")}
+      backPath="/brand/list"
     />
   );
 }
