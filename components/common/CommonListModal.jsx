@@ -165,7 +165,7 @@ const CommonListModal = ({
 
       const res = await api.post(`/${modelName}/add`, addForm);
 
-      if (res.data && res.data.success === false) {
+      if (res.data?.success === false) {
         setAddErrors({ api: res.data.message || "Failed to save." });
         return;
       }

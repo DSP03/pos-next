@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import EditPage from "@/components/common/EditPage";
 
 export default function ShelfEditPage() {
-  const router = useRouter();
 
   const fields = [
     {

@@ -1,11 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import EditPage from "@/components/common/EditPage";
 
 export default function BrandEdit() {
-  const router = useRouter();
 
   const fields = [
     { name: "identifier", label: "Identifier", type: "text", disabled: true },

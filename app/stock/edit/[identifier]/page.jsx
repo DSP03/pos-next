@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import EditPage from "@/components/common/EditPage";
 
 const StockEditPage = () => {
-  const router = useRouter();
 
   return (
     <EditPage
