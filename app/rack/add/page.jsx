@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AddPage from "@/components/common/AddPage";
 import { getActiveShelves } from "@/components/common/DataDropdowns";
+import {
+  getRackFields,
+  RACK_INITIAL_FORM,
+  validateRack,
+} from "../utils/RackCoreFields";
 
 export default function RackAddPage() {
   const router = useRouter();
@@ -29,48 +34,13 @@ export default function RackAddPage() {
     }
   };
 
-  const fields = [
-    {
-      name: "name",
-      label: "Rack Name",
-      type: "text",
-    },
-    {
-      name: "shelfIdentifiers",
-      label: "Shelves",
-      type: "multicheck",
-      options: shelfOptions,
-    },
-    {
-      name: "status",
-      label: "Status",
-      type: "status",
-    },
-  ];
-
-  const validate = (form) => {
-    const errors = {};
-
-    if (!form.name?.trim()) {
-      errors.name = "Rack name is required";
-    } else if (/\s/.test(form.name)) {
-      errors.name = "Spaces are not allowed in rack name";
-    }
-
-    return errors;
-  };
-
   return (
     <AddPage
       title="Add Rack"
       modelName="rack"
-      fields={fields}
-      initialForm={{
-        name: "",
-        shelfIdentifiers: [],
-        status: true,
-      }}
-      validate={validate}
+      fields={getRackFields(shelfOptions)}
+      initialForm={RACK_INITIAL_FORM}
+      validate={validateRack}
       onSuccess={() => router.push("/rack/list")}
       onCancel={() => router.push("/rack/list")}
     />

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import EditPage from "@/components/common/EditPage";
+import { AUDIT_FIELDS } from "@/components/common/AuditFields";
 import { getActiveShelves } from "@/components/common/DataDropdowns";
+import {getRackFields,RACK_INITIAL_FORM,validateRack,} from "../../utils/RackCoreFields";
 
 export default function RackEditPage() {
-
   const [shelfOptions, setShelfOptions] = useState([]);
 
   useEffect(() => {
@@ -28,55 +29,9 @@ export default function RackEditPage() {
   };
 
   const fields = [
-    {
-      name: "name",
-      label: "Rack Name",
-      type: "text",
-    },
-    {
-      name: "shelfIdentifiers",
-      label: "Shelves",
-      type: "multicheck",
-      options: shelfOptions,
-    },
-    {
-      name: "status",
-      label: "Status",
-      type: "status",
-    },
-    {
-      name: "createdBy",
-      label: "Created By",
-      type: "text",
-    },
-    {
-      name: "createdOn",
-      label: "Created On",
-      type: "text",
-    },
-    {
-      name: "modifiedBy",
-      label: "Modified By",
-      type: "text",
-    },
-    {
-      name: "modifiedOn",
-      label: "Modified On",
-      type: "text",
-    },
+    ...getRackFields(shelfOptions),
+    ...AUDIT_FIELDS,
   ];
-
-  const validate = (form) => {
-    const errors = {};
-
-    if (!form.name?.trim()) {
-      errors.name = "Rack name is required";
-    } else if (/\s/.test(form.name)) {
-      errors.name = "Spaces are not allowed in rack name";
-    }
-
-    return errors;
-  };
 
   return (
     <EditPage
@@ -84,10 +39,7 @@ export default function RackEditPage() {
       title="Edit Rack"
       fields={fields}
       initialForm={{
-        identifier: "",
-        name: "",
-        shelfIdentifiers: [],
-        status: true,
+        ...RACK_INITIAL_FORM,
         createdBy: "",
         createdOn: "",
         modifiedBy: "",
@@ -100,7 +52,7 @@ export default function RackEditPage() {
         "modifiedBy",
         "modifiedOn",
       ]}
-      validate={validate}
+      validate={validateRack}
       backPath="/rack/list"
     />
   );
