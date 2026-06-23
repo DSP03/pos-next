@@ -32,6 +32,8 @@ const CommonListPage = ({
   enableToggle = false,
   hideAddButton = false,
   sizePerPage = 10,
+  onAddClick, // optional override; if provided, called instead of navigating to /modelName/add
+  externalRefresh = 0, // optional external trigger to force a reload (e.g. after a modal add)
 }) => {
   const router = useRouter();
 
@@ -80,7 +82,7 @@ const CommonListPage = ({
 
   useEffect(() => {
     if (modelName) loadData(page);
-  }, [modelName, page, refreshFlag, loadData]);
+  }, [modelName, page, refreshFlag, externalRefresh, loadData]);
 
   useEffect(() => {
     if (modelName) loadData(0);
@@ -107,6 +109,14 @@ const CommonListPage = ({
       console.error("Error toggling:", err);
       alert("Toggle failed. Please try again.");
       setRefreshFlag((f) => f + 1);
+    }
+  };
+
+  const handleAddClick = () => {
+    if (onAddClick) {
+      onAddClick();
+    } else {
+      router.push(`/${modelName}/add`);
     }
   };
 
@@ -141,7 +151,7 @@ const CommonListPage = ({
             </div>
             {!hideAddButton && (
               <button
-                onClick={() => router.push(`/${modelName}/add`)}
+                onClick={handleAddClick}
                 className="bg-[#0097AC] hover:bg-[#006E74] text-white px-5 py-2 rounded-xl transition-colors"
               >
                 + Add
@@ -275,6 +285,8 @@ CommonListPage.propTypes = {
   enableToggle: PropTypes.bool,
   hideAddButton: PropTypes.bool,
   sizePerPage: PropTypes.number,
+  onAddClick: PropTypes.func,
+  externalRefresh: PropTypes.number,
 };
 
 export default CommonListPage;

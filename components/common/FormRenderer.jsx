@@ -420,7 +420,7 @@ const FormRenderer = ({
     const { name, value, type } = e.target;
     let clean = value;
     if (name === "phoneNo" || type === "phone")
-      clean = value.replace(/\D/g, "");
+      clean = value.replaceAll(/\D/g, "");
     if (type === "number") clean = value === "" ? "" : Number(value);
     setForm((prev) => ({ ...prev, [name]: clean }));
   };
@@ -439,7 +439,7 @@ const FormRenderer = ({
       };
     });
 
-  const renderField = (f) => {
+  const renderField = (f, idx) => {
     const value = form[f.name];
     const error = errors[f.name];
     const props = { f, value, error };
@@ -460,7 +460,7 @@ const FormRenderer = ({
     if (f.type === "divider")
       return (
         <div
-          key={f.name ?? Math.random()}
+          key={f.name ?? `divider-${idx}`}
           className={cx(
             "col-span-full border-t border-gray-200 my-1",
             f.label && "pt-2"
@@ -516,7 +516,11 @@ const FormRenderer = ({
       ? `grid grid-cols-1 sm:grid-cols-${columns} gap-4`
       : "space-y-4";
 
-  return <div className={gridClass}>{fields.map(renderField)}</div>;
+  return (
+    <div className={gridClass}>
+      {fields.map((f, idx) => renderField(f, idx))}
+    </div>
+  );
 };
 
 FormRenderer.propTypes = {

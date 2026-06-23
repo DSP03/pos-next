@@ -22,7 +22,7 @@ export const validateCustomer = (form) => {
     errors.phoneNo = "Phone number must be exactly 10 digits";
   }
 
-  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+  if (form.email &&!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(form.email.trim())) {
     errors.email = "Enter a valid email address";
   }
 
