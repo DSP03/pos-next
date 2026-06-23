@@ -2,69 +2,11 @@
 
 import EditPage from "@/components/common/EditPage";
 import { validateCustomerWithAddress } from "@/app/customer/utils/customerValidator";
+import { CUSTOMER_CORE_FIELDS } from "@/app/customer/utils/CoreCustomerFields";
+import { AUDIT_FIELDS } from "@/components/common/AuditFields";
 
 const CUSTOMER_FIELDS = [
-  { name: "divider-core", type: "divider", label: "Customer Information" },
-
-  { name: "name", type: "text", label: "Full Name", required: true },
-  {
-    name: "phoneNo",
-    type: "phone",
-    label: "Phone Number",
-    required: true,
-    disabled: true,
-  },
-  {
-    name: "email",
-    type: "email",
-    label: "Email Address",
-  },
-
-  { name: "divider-class", type: "divider", label: "Classification" },
-
-  {
-    name: "partyType",
-    type: "select",
-    label: "Party Type",
-    options: [
-      { identifier: "individual", label: "Individual" },
-      { identifier: "business", label: "Business" },
-      { identifier: "government", label: "Government" },
-    ],
-  },
-
-  {
-    name: "balanceType",
-    type: "radio",
-    label: "Balance Type",
-    options: [
-      { identifier: "credit", label: "Credit" },
-      { identifier: "debit", label: "Debit" },
-    ],
-  },
-
-  { name: "divider-fin", type: "divider", label: "Financials" },
-
-  {
-    name: "balance",
-    type: "number",
-    label: "Opening Balance",
-    min: 0,
-    step: 0.01,
-  },
-  {
-    name: "creditLimit",
-    type: "number",
-    label: "Credit Limit",
-    min: 0,
-    step: 0.01,
-  },
-
-  {
-    name: "status",
-    type: "status",
-    label: "Status",
-  },
+  ...CUSTOMER_CORE_FIELDS,
 
   {
     name: "billingAddress",
@@ -104,30 +46,7 @@ const CUSTOMER_FIELDS = [
     ],
   },
 
-  {
-    name: "createdBy",
-    label: "Created By",
-    type: "text",
-    disabled: true,
-  },
-  {
-    name: "createdOn",
-    label: "Created On",
-    type: "text",
-    disabled: true,
-  },
-  {
-    name: "modifiedBy",
-    label: "Modified By",
-    type: "text",
-    disabled: true,
-  },
-  {
-    name: "modifiedOn",
-    label: "Modified On",
-    type: "text",
-    disabled: true,
-  },
+  ...AUDIT_FIELDS,
 ];
 
 export default function CustomerEdit() {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import EditPage from "@/components/common/EditPage";
 import api from "@/services/api";
+import { AUDIT_FIELDS } from "@/components/common/AuditFields";
 
 export default function CategoryEdit() {
   const [options, setOptions] = useState({
@@ -51,30 +52,7 @@ export default function CategoryEdit() {
           label: "Parent Category",
           type: "select",
         },
-        {
-          name: "createdBy",
-          label: "Created By",
-          type: "text",
-          disabled: true,
-        },
-        {
-          name: "createdOn",
-          label: "Created On",
-          type: "text",
-          disabled: true,
-        },
-        {
-          name: "modifiedBy",
-          label: "Modified By",
-          type: "text",
-          disabled: true,
-        },
-        {
-          name: "modifiedOn",
-          label: "Modified On",
-          type: "text",
-          disabled: true,
-        },
+        ...AUDIT_FIELDS,
       ]}
       validate={(form) => {
         if (!form.name?.trim()) {

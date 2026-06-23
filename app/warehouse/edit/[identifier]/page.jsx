@@ -1,5 +1,6 @@
 "use client";
 
+import { AUDIT_FIELDS } from "@/components/common/AuditFields";
 import EditPage from "@/components/common/EditPage";
 
 export default function WarehouseEditPage() {
@@ -34,26 +35,7 @@ export default function WarehouseEditPage() {
       label: "Location",
       type: "textarea",
     },
-    {
-      name: "createdBy",
-      label: "Created By",
-      type: "text",
-    },
-    {
-      name: "createdOn",
-      label: "Created On",
-      type: "text",
-    },
-    {
-      name: "modifiedBy",
-      label: "Modified By",
-      type: "text",
-    },
-    {
-      name: "modifiedOn",
-      label: "Modified On",
-      type: "text",
-    },
+    ...AUDIT_FIELDS
   ];
 
   const validate = (form) => {

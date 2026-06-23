@@ -12,6 +12,7 @@ import PageGuard from "@/components/common/PageGuard";
 import AddModal from "@/components/common/AddModal";
 import FormRenderer from "@/components/common/FormRenderer";
 import { validateCustomer } from "@/app/customer/utils/customerValidator";
+import { CUSTOMER_CORE_FIELDS, CUSTOMER_INITIAL_FORM } from "@/app/customer/utils/CoreCustomerFields";
 
 const today = () =>
   new Date().toLocaleDateString("en-GB").replaceAll("/", "-");
@@ -25,48 +26,6 @@ const PAYMENT_METHODS = [
   { id: "UPI", label: "UPI", icon: Smartphone },
 ];
 
-// Quick-add customer form — mirrors the simplified fields used on the
-// customer list popup (no billing/shipping address here either).
-const CUSTOMER_FIELDS = [
-  { name: "divider-core", type: "divider", label: "Customer Information" },
-  { name: "name", type: "text", label: "Full Name", required: true },
-  { name: "phoneNo", type: "phone", label: "Phone Number", required: true },
-  { name: "email", type: "email", label: "Email Address" },
-  {
-    name: "partyType",
-    type: "select",
-    label: "Party Type",
-    options: [
-      { identifier: "individual", label: "Individual" },
-      { identifier: "business", label: "Business" },
-      { identifier: "government", label: "Government" },
-    ],
-  },
-  {
-    name: "balanceType",
-    type: "radio",
-    label: "Balance Type",
-    options: [
-      { identifier: "credit", label: "Credit" },
-      { identifier: "debit", label: "Debit" },
-    ],
-  },
-  { name: "balance", type: "number", label: "Opening Balance" },
-  { name: "creditLimit", type: "number", label: "Credit Limit" },
-  { name: "status", type: "status", label: "Status" },
-];
-
-const CUSTOMER_INITIAL_FORM = {
-  name: "",
-  phoneNo: "",
-  email: "",
-  balance: 0,
-  balanceType: "",
-  partyType: "",
-  creditLimit: 0,
-  status: true,
-};
-
 const Field = ({ label, children }) => (
   <div className="border border-[#D9E5E7] rounded-lg px-4 pt-2 pb-2.5">
     <p className="text-xs text-gray-500 mb-1">{label}</p>
@@ -78,7 +37,6 @@ const Field = ({ label, children }) => (
 const CartRow = ({ entry, index, onQtyChange, onRemove }) => {
   const [draft, setDraft] = useState(String(entry.quantity));
 
-  // Keep draft in sync if parent refreshes entries (e.g. after API call)
   useEffect(() => {
     setDraft(String(entry.quantity));
   }, [entry.quantity]);
@@ -88,7 +46,6 @@ const CartRow = ({ entry, index, onQtyChange, onRemove }) => {
     if (parsed >= 1) {
       onQtyChange(index, parsed);
     } else {
-      // Reset to last known good value
       setDraft(String(entry.quantity));
     }
   };
@@ -110,9 +67,9 @@ const CartRow = ({ entry, index, onQtyChange, onRemove }) => {
             type="number"
             min={1}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}           // free typing, no validation yet
-            onBlur={() => commit(draft)}                          // validate + save on blur
-            onKeyDown={(e) => { if (e.key === "Enter") { e.target.blur(); } }} // Enter commits too
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={() => commit(draft)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.target.blur(); } }}
             className="w-12 text-center font-medium border border-[#D9E5E7] rounded-lg py-0.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
           />
           <button
@@ -169,13 +126,11 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
 
-  // --- Quick add-customer modal state ---
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [customerForm, setCustomerForm] = useState(CUSTOMER_INITIAL_FORM);
   const [customerErrors, setCustomerErrors] = useState({});
   const [customerSaving, setCustomerSaving] = useState(false);
 
-  // --- Payment modal state ---
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [receivedAmount, setReceivedAmount] = useState("");
@@ -224,7 +179,6 @@ const CartPage = () => {
   const handleQtyChange = async (index, qty) => {
     const entry = entries[index];
     const parsed = Number(qty);
-    // validation is handled by CartRow's commit() before this is called
     try {
       await api.post("/cartEntry/update", { ...entry, quantity: parsed });
       await fetchCart(customerId);
@@ -250,7 +204,6 @@ const CartPage = () => {
     } catch { showToast("Failed to clear cart"); }
   };
 
-  // --- Payment / checkout handlers ---
   const openPaymentModal = () => {
     if (!customerId || entries.length === 0) return;
     setPaymentMethod("CASH");
@@ -264,8 +217,6 @@ const CartPage = () => {
     setPaymentError("");
   };
 
-  // Card/UPI are assumed to be charged for the exact amount —
-  // only Cash needs a received amount typed in (to compute change).
   const selectPaymentMethod = (id) => {
     setPaymentMethod(id);
     if (id !== "CASH") {
@@ -290,7 +241,7 @@ const CartPage = () => {
     setSaving(true);
     try {
       const payload = {
-        customer: customerId, // IMPORTANT: backend uses cartId as identifier
+        customer: customerId,
         paymentMethod,
         receivedAmount: paymentMethod === "CASH" ? received : total,
       };
@@ -306,7 +257,6 @@ const CartPage = () => {
       setShowPayment(false);
       showToast("Order placed successfully");
 
-      // redirect to order page
       router.push(`/orders/${order.identifier}`);
     } catch (err) {
       console.error(err);
@@ -316,7 +266,6 @@ const CartPage = () => {
     }
   };
 
-  // --- Quick add-customer handlers ---
   const openAddCustomer = () => {
     setCustomerForm(CUSTOMER_INITIAL_FORM);
     setCustomerErrors({});
@@ -346,9 +295,6 @@ const CartPage = () => {
         return;
       }
 
-      // NOTE: assumes the created customer record (with its identifier) comes
-      // back as res.data, or res.data.data — adjust this line if your
-      // /customer/add response shape is different.
       const created = res.data?.data ?? res.data ?? {};
 
       setCustomer({
@@ -376,7 +322,6 @@ const CartPage = () => {
         <div className="min-h-screen bg-gray-100 p-6">
           <div className="max-w-7xl mx-auto">
 
-            {/* Header */}
             <div className="bg-gradient-to-r from-red-700 to-red-500 px-8 py-5 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -407,13 +352,10 @@ const CartPage = () => {
               </div>
             </div>
 
-            {/* 70 / 30 grid — both columns same height */}
             <div className="grid grid-cols-[1fr_auto] gap-0 items-stretch">
 
-              {/* ── LEFT 70% ── */}
               <div className="bg-white border-l border-b border-[#D9E5E7] rounded-bl-3xl p-6 space-y-5 min-w-0">
 
-                {/* Customer / ID / Date */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Field label="Customer">
                     <CustomerSelect value={customer} onChange={setCustomer} />
@@ -426,7 +368,6 @@ const CartPage = () => {
                   </Field>
                 </div>
 
-                {/* Add product */}
                 {customerId && (
                   <div className="bg-white rounded-2xl p-4 border border-[#D9E5E7] shadow-sm">
                     <div className="flex items-end gap-3">
@@ -446,7 +387,6 @@ const CartPage = () => {
                   </div>
                 )}
 
-                {/* Cart table */}
                 <div>
                   {loading ? (
                     <div className="py-12 text-center text-gray-400 text-sm">Loading cart...</div>
@@ -457,13 +397,11 @@ const CartPage = () => {
 
               </div>
 
-              {/* ── RIGHT 30% ── */}
               <div
                 className="bg-white border border-[#D9E5E7] border-l-0 rounded-br-3xl p-6 flex flex-col gap-4"
                 style={{ width: "320px" }}
               >
 
-                {/* Order summary */}
                 <div>
                   <p className="font-semibold text-gray-800 text-base">Order summary</p>
                   <p className="text-xs text-gray-400 mb-3">{entries.length} item{entries.length === 1 ? "" : "s"} in cart</p>
@@ -497,10 +435,8 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-[#D9E5E7]" />
 
-                {/* Bill To */}
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Bill To</p>
                   {customerId ? (
@@ -529,10 +465,8 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-[#D9E5E7]" />
 
-                {/* Action buttons — pushed to bottom */}
                 <div className="flex flex-col gap-3 mt-auto">
                   <button
                     onClick={openPaymentModal}
@@ -558,12 +492,10 @@ const CartPage = () => {
 
               </div>
             </div>
-            {/* end grid */}
 
           </div>
         </div>
 
-        {/* Quick add-customer popup */}
         <AddModal
           open={showAddCustomer}
           title="Add Customer"
@@ -572,7 +504,7 @@ const CartPage = () => {
           onSubmit={handleAddCustomerSubmit}
         >
           <FormRenderer
-            fields={CUSTOMER_FIELDS}
+            fields={CUSTOMER_CORE_FIELDS}
             form={customerForm}
             setForm={setCustomerForm}
             errors={customerErrors}
@@ -586,7 +518,6 @@ const CartPage = () => {
           )}
         </AddModal>
 
-        {/* Payment popup */}
         <AddModal
           open={showPayment}
           title="Payment"
@@ -653,7 +584,6 @@ const CartPage = () => {
           </div>
         </AddModal>
 
-        {/* Toast */}
         {toast && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-[#D9E5E7] shadow-lg px-6 py-3 rounded-xl text-sm text-gray-700 z-50">
             {toast}
