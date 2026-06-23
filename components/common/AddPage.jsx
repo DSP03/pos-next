@@ -16,7 +16,6 @@ const AddPage = ({
   validate,
   onSuccess,
   onCancel,
-  
 }) => {
   const [form, setForm] = useState(initialForm)
   const [fieldErrors, setFieldErrors] = useState({})
