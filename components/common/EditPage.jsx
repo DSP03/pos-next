@@ -95,7 +95,7 @@ const EditPage = ({
 
     setLoading(true);
     try {
-      const res = await api.post(`/${modelName}/update`, payload);
+      const res = await api.put(`/${modelName}/update`, payload);
       if (res.data?.success === false) {
         setError(res.data.message || "Update failed");
         return;

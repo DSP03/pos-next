@@ -101,7 +101,7 @@ const CommonListPage = ({
 
   const handleToggle = async (item, index) => {
     try {
-      await api.post(`/${modelName}/toggle`, { identifier: item.identifier });
+      await api.patch(`/${modelName}/toggle`, { identifier: item.identifier });
       const updated = [...listData];
       updated[index].status = !updated[index].status;
       setListData(updated);
