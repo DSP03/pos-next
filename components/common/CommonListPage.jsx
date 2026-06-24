@@ -99,11 +99,11 @@ const CommonListPage = ({
     }
   };
 
-  const handleToggle = async (item, index) => {
+ const handleToggle = async (item, index) => {
     try {
-      await api.patch(`/${modelName}/toggle`, { identifier: item.identifier });
+      const res = await api.patch(`/${modelName}/toggle`, { identifier: item.identifier });
       const updated = [...listData];
-      updated[index].status = !updated[index].status;
+      updated[index] = { ...updated[index], ...res.data };
       setListData(updated);
     } catch (err) {
       console.error("Error toggling:", err);

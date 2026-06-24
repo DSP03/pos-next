@@ -180,7 +180,7 @@ const CartPage = () => {
     const entry = entries[index];
     const parsed = Number(qty);
     try {
-      await api.post("/cartEntry/update", { ...entry, quantity: parsed });
+      await api.put("/cartEntry/update", { ...entry, quantity: parsed });
       await fetchCart(customerId);
     } catch { showToast("Failed to update quantity"); }
   };
