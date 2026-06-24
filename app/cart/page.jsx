@@ -10,6 +10,7 @@ import CustomerSelect from "@/components/common/CustomerSelect";
 import ProductSelect from "@/components/common/ProductSelect";
 import PageGuard from "@/components/common/PageGuard";
 import AddModal from "@/components/common/AddModal";
+import ActionModal from "@/components/common/ActionModal";
 import FormRenderer from "@/components/common/FormRenderer";
 import { validateCustomer } from "@/app/customer/utils/customerValidator";
 import { CUSTOMER_CORE_FIELDS, CUSTOMER_INITIAL_FORM } from "@/app/customer/utils/CoreCustomerFields";
@@ -518,13 +519,14 @@ const CartPage = () => {
           )}
         </AddModal>
 
-        <AddModal
+        <ActionModal
           open={showPayment}
           title="Payment"
           loading={saving}
           onClose={closePaymentModal}
           onSubmit={confirmCheckout}
           submitLabel="Confirm & Place Order"
+          savingLabel="Placing order..."
         >
           <div className="space-y-4">
 
@@ -582,7 +584,7 @@ const CartPage = () => {
             )}
 
           </div>
-        </AddModal>
+        </ActionModal>
 
         {toast && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-[#D9E5E7] shadow-lg px-6 py-3 rounded-xl text-sm text-gray-700 z-50">
