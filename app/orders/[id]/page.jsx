@@ -129,6 +129,11 @@ export default function OrderDetailsPage() {
                   </div>
 
                   <div>
+                    <p className="text-gray-500">Billed By</p>
+                    <p className="font-semibold">{order.createdBy || "—"}</p>
+                  </div>
+
+                  <div>
                     <p className="text-gray-500">Payment</p>
                     <p className="font-semibold">{order.paymentMethod}</p>
                   </div>
