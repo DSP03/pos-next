@@ -90,7 +90,7 @@ const CommonListPage = ({
 
   const handleDeleteConfirm = async () => {
     try {
-      await api.post(`/${modelName}/delete`, { identifier: deleteTarget });
+      await api.delete(`/${modelName}/delete`, { data: { identifier: deleteTarget } });
       setDeleteTarget(null);
       setRefreshFlag((f) => f + 1);
     } catch (err) {
