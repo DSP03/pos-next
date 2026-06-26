@@ -45,7 +45,7 @@ api.interceptors.response.use(
     console.log("Status:", status);
     console.log("Token:", token);
  
-    if (token && (status === 401 || status === 403)) {
+    if (token && (status === 401)) {
  
       console.log("Redirecting to login...");
  

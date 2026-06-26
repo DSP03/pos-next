@@ -71,9 +71,15 @@ const CommonListPage = ({
           setTotalPages(res.data.totalPages || 0);
         }
       } catch (err) {
-        console.error("Error loading data:", err);
-        alert("Failed to load data. Please try again.");
-      } finally {
+        console.log(err.response);
+
+        if (err.response) {
+          console.log("Status:", err.response.status);
+          console.log("Data:", err.response.data);
+        }
+
+        alert(err.response?.data?.message || "Failed to load data.");
+      }finally {
         setLoading(false);
       }
     },
