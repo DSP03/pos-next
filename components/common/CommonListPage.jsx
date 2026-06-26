@@ -32,8 +32,8 @@ const CommonListPage = ({
   enableToggle = false,
   hideAddButton = false,
   sizePerPage = 10,
-  onAddClick, // optional override; if provided, called instead of navigating to /modelName/add
-  externalRefresh = 0, // optional external trigger to force a reload (e.g. after a modal add)
+  onAddClick,
+  externalRefresh = 0,
 }) => {
   const router = useRouter();
 

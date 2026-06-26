@@ -6,9 +6,6 @@ const validateAddress = (address, errorKey, label) => {
   return missing ? { [errorKey]: `All ${label} fields are mandatory` } : {};
 };
 
-// Core fields shared by every customer form: List popup, standalone Add, Edit.
-// Does NOT check billingAddress/shippingAddress — those only matter where the
-// form actually collects them.
 export const validateCustomer = (form) => {
   const errors = {};
 
@@ -53,15 +50,12 @@ export const validateCustomer = (form) => {
   return errors;
 };
 
-// Address-only validation. Use this on forms that still render
-// billingAddress / shippingAddress sections (currently: Edit).
 export const validateCustomerAddresses = (form) => {
   const billingErrors = validateAddress(form.billingAddress, "billingAddress", "billing address");
   const shippingErrors = validateAddress(form.shippingAddress, "shippingAddress", "shipping address");
   return { ...billingErrors, ...shippingErrors };
 };
 
-// Convenience wrapper for the Edit page: core fields + address fields together.
 export const validateCustomerWithAddress = (form) => ({
   ...validateCustomer(form),
   ...validateCustomerAddresses(form),

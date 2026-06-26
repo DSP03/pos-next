@@ -17,8 +17,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- Pagination state, driven by the WsDto fields the backend already returns ---
-  const [page, setPage] = useState(0); // backend is 0-indexed
+  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
@@ -44,7 +43,6 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    // Only drive the normal paginated fetch when there's no active search term.
     if (!search.trim()) {
       fetchOrders(page);
     }
@@ -78,14 +76,12 @@ export default function OrdersPage() {
     }
   };
 
-  // Debounce search input so we don't fire a request on every keystroke
   useEffect(() => {
     const handle = setTimeout(() => {
       searchOrders(search);
     }, 350);
 
     return () => clearTimeout(handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   const handleSearchChange = (e) => {

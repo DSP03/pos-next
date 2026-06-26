@@ -34,7 +34,6 @@ const Field = ({ label, children }) => (
   </div>
 );
 
-// Isolated row so each qty input has its own draft state
 const CartRow = ({ entry, index, onQtyChange, onRemove }) => {
   const [draft, setDraft] = useState(String(entry.quantity));
 
