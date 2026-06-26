@@ -51,7 +51,7 @@ api.interceptors.response.use(
       localStorage.clear();
       sessionStorage.removeItem("errorMessage");
 
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
       return Promise.reject(error);
     }
 
@@ -64,7 +64,7 @@ api.interceptors.response.use(
 
       sessionStorage.setItem("errorMessage", message);
 
-      window.location.href = "/unauthorized";
+      globalThis.location.href = "/unauthorized";
       return Promise.reject(error);
     }
 
