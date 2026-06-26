@@ -6,7 +6,7 @@ import {
   WAREHOUSE_CORE_FIELDS,
   WAREHOUSE_INITIAL_FORM,
   validateWarehouse,
-} from "../utils/WarehouseCoreFields";
+} from "../../utils/WarehouseFields";
 
 const WAREHOUSE_FIELDS = [
   ...WAREHOUSE_CORE_FIELDS,

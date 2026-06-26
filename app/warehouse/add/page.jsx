@@ -6,7 +6,8 @@ import {
   WAREHOUSE_CORE_FIELDS,
   WAREHOUSE_INITIAL_FORM,
   validateWarehouse,
-} from "../utils/WarehouseCoreFields";
+} from "../utils/WarehouseFields";
+
 
 export default function WarehouseAddPage() {
   const router = useRouter();
