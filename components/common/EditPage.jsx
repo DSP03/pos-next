@@ -67,7 +67,10 @@ const EditPage = ({
           setError(res.data?.message || "Failed to load data");
         }
       })
-      .catch(() => setError("Failed to load data"))
+      .catch((err) => {
+        const message = err.response?.data?.message || "Failed to load data";
+        setError(message);
+      })
       .finally(() => setDataLoading(false));
   }, [identifier, modelName, skipFetch]);
 
@@ -104,7 +107,7 @@ const EditPage = ({
       setTimeout(() => router.push(resolvedBackPath), 700);
     } catch (err) {
       console.error(`Update failed for ${modelName}:`, err.response?.data || err);
-      setError("Something went wrong. Please try again.");
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
