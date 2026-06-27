@@ -96,24 +96,32 @@ const CommonListPage = ({
 
   const handleDeleteConfirm = async () => {
     try {
-      await api.delete(`/${modelName}/delete`, { data: { identifier: deleteTarget } });
+      await api.delete(`/${modelName}/delete`, {
+        data: { identifier: deleteTarget },
+        skipAuthRedirect: true,
+      });
       setDeleteTarget(null);
       setRefreshFlag((f) => f + 1);
     } catch (err) {
       console.error("Error deleting:", err);
-      alert("Delete failed. Please try again.");
+      alert(err.response?.data?.message || "Delete failed. Please try again.");
+      setDeleteTarget(null);
     }
   };
 
  const handleToggle = async (item, index) => {
     try {
-      const res = await api.patch(`/${modelName}/toggle`, { identifier: item.identifier });
+      const res = await api.patch(
+        `/${modelName}/toggle`,
+        { identifier: item.identifier },
+        { skipAuthRedirect: true }
+      );
       const updated = [...listData];
       updated[index] = { ...updated[index], ...res.data };
       setListData(updated);
     } catch (err) {
       console.error("Error toggling:", err);
-      alert("Toggle failed. Please try again.");
+      alert(err.response?.data?.message || "Toggle failed. Please try again.");
       setRefreshFlag((f) => f + 1);
     }
   };

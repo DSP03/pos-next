@@ -40,6 +40,7 @@ api.interceptors.response.use(
 
     const status = error.response?.status;
     const token = localStorage.getItem("token");
+    const skipAuthRedirect = error.config?.skipAuthRedirect;
 
     console.log("Status:", status);
     console.log("Token:", token);
@@ -55,8 +56,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // User authenticated but not authorized
-    if (token && status === 403) {
+    if (token && status === 403 && !skipAuthRedirect) {
       console.log("Redirecting to unauthorized...");
 
       const message =
