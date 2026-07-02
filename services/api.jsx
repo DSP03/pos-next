@@ -31,39 +31,28 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => {
-    console.log("SUCCESS:", response.status, response.config.url);
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.log("ERROR RESPONSE:", error.response);
-
     const status = error.response?.status;
-    const token = localStorage.getItem("token");
     const skipAuthRedirect = error.config?.skipAuthRedirect;
 
-    console.log("Status:", status);
-    console.log("Token:", token);
-
-    // Token expired / invalid
-    if (token && status === 401) {
-      console.log("Redirecting to login...");
-
+    // Unauthenticated — no/invalid/expired token. Always redirect, token or not.
+    if (status === 401) {
       localStorage.clear();
-      sessionStorage.removeItem("errorMessage");
-
+      sessionStorage.setItem(
+        "errorMessage",
+        error.response?.data?.message || "Session expired. Please log in again."
+      );
       globalThis.location.href = "/login";
       return Promise.reject(error);
     }
 
-    if (token && status === 403 && !skipAuthRedirect) {
-      console.log("Redirecting to unauthorized...");
-
-      const message =
-        error.response?.data?.message || "Access Denied";
-
-      sessionStorage.setItem("errorMessage", message);
-
+    // Authenticated but not allowed for this action/route
+    if (status === 403 && !skipAuthRedirect) {
+      sessionStorage.setItem(
+        "errorMessage",
+        error.response?.data?.message || "Access Denied"
+      );
       globalThis.location.href = "/unauthorized";
       return Promise.reject(error);
     }

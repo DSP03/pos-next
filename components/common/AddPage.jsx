@@ -4,7 +4,6 @@ import { useState } from 'react'
 import PropTypes from 'prop-types'
 import api from '@/services/api'
 import FormRenderer from './FormRenderer'
-import PageGuard from './PageGuard'
 import Layout from '@/components/common/Layout'
 
 const AddPage = ({
@@ -42,7 +41,7 @@ const AddPage = ({
 
     setLoading(true)
     try {
-      const res = await api.post(`/${modelName}/add`, form)
+      const res = await api.post(`/${modelName}/add`, form,{skipAuthRedirect: true})
       if (res.data?.success === false) {
         setError(res.data.message || 'Failed')
         return
@@ -51,14 +50,17 @@ const AddPage = ({
       setTimeout(() => { onSuccess?.() }, 700)
     } catch (e) {
       console.log(e)
-      setError('Something went wrong')
+      
+      console.log(e.response);
+  console.log(e.response?.data);
+  console.log(e.response?.data?.message);
+      setError(e.response?.data?.message||'Something went wrong')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <PageGuard>
       <Layout>
         <div className="min-h-screen bg-[#F2F7F8] p-6">
           <div className="max-w-4xl mx-auto">
@@ -129,7 +131,6 @@ const AddPage = ({
           </div>
         </div>
       </Layout>
-    </PageGuard>
   )
 }
 

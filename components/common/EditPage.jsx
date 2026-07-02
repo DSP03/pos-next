@@ -6,7 +6,6 @@ import PropTypes from "prop-types";
 import Layout from "@/components/common/Layout";
 import api from "../../services/api";
 import FormRenderer from "@/components/common/FormRenderer";
-import PageGuard from "./PageGuard";
 
 const formatDateTime = (value) => {
   if (!value) return "";
@@ -98,7 +97,7 @@ const EditPage = ({
 
     setLoading(true);
     try {
-      const res = await api.put(`/${modelName}/update`, payload);
+      const res = await api.put(`/${modelName}/update`, payload,{skipAuthRedirect: true});
       if (res.data?.success === false) {
         setError(res.data.message || "Update failed");
         return;
@@ -120,101 +119,97 @@ const EditPage = ({
 
   if (!modelName) {
     return (
-      <PageGuard>
-        <Layout>
-          <div className="p-5 text-red-600">modelName is missing</div>
-        </Layout>
-      </PageGuard>
+      <Layout>
+        <div className="p-5 text-red-600">modelName is missing</div>
+      </Layout>
     );
   }
 
   return (
-    <PageGuard>
-      <Layout>
-        <div className="min-h-screen bg-[#F2F7F8] p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-[#D9E5E7]">
+    <Layout>
+      <div className="min-h-screen bg-[#F2F7F8] p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-[#D9E5E7]">
 
-              {/* HEADER */}
-              <div className="bg-gradient-to-r from-[#003C51] to-[#006E74] px-8 py-6">
-                <h2 className="text-3xl font-bold text-white">{pageTitle}</h2>
-                <p className="text-cyan-100 mt-1 text-sm">
-                  Update and save record details
-                </p>
-              </div>
+            {/* HEADER */}
+            <div className="bg-gradient-to-r from-[#003C51] to-[#006E74] px-8 py-6">
+              <h2 className="text-3xl font-bold text-white">{pageTitle}</h2>
+              <p className="text-cyan-100 mt-1 text-sm">
+                Update and save record details
+              </p>
+            </div>
 
-              {/* BODY */}
-              <div className="p-8 space-y-6">
-                {dataLoading && (
-                  <div className="flex items-center justify-center py-16">
-                    <div className="h-12 w-12 rounded-full border-4 border-[#0097AC] border-t-transparent animate-spin" />
+            {/* BODY */}
+            <div className="p-8 space-y-6">
+              {dataLoading && (
+                <div className="flex items-center justify-center py-16">
+                  <div className="h-12 w-12 rounded-full border-4 border-[#0097AC] border-t-transparent animate-spin" />
+                </div>
+              )}
+
+              {!dataLoading && (
+                <>
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl shadow-sm">
+                      <div className="font-semibold">Error</div>
+                      <div className="text-sm mt-1">{error}</div>
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="bg-cyan-50 border border-cyan-200 text-[#006E74] px-4 py-3 rounded-2xl shadow-sm">
+                      <div className="font-semibold">Success</div>
+                      <div className="text-sm mt-1">{success}</div>
+                    </div>
+                  )}
+
+                  <div className="bg-white rounded-2xl p-6 border border-[#D9E5E7] shadow-sm">
+                    <FormRenderer
+                      fields={resolvedFields}
+                      form={form}
+                      setForm={setForm}
+                      options={options}
+                      errors={fieldErrors}
+                    />
                   </div>
-                )}
 
-                {!dataLoading && (
-                  <>
-                    {error && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl shadow-sm">
-                        <div className="font-semibold">Error</div>
-                        <div className="text-sm mt-1">{error}</div>
-                      </div>
-                    )}
+                  <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                      className={`flex-1 py-3 rounded-2xl font-semibold text-white transition-all duration-300 shadow-lg ${
+                        loading
+                          ? "bg-[#7A7480] cursor-not-allowed"
+                          : "bg-gradient-to-r from-[#0097AC] to-[#006E74] hover:scale-[1.02] hover:shadow-xl"
+                      }`}
+                    >
+                      {loading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Updating...
+                        </div>
+                      ) : (
+                        "Update"
+                      )}
+                    </button>
 
-                    {success && (
-                      <div className="bg-cyan-50 border border-cyan-200 text-[#006E74] px-4 py-3 rounded-2xl shadow-sm">
-                        <div className="font-semibold">Success</div>
-                        <div className="text-sm mt-1">{success}</div>
-                      </div>
-                    )}
-
-                    <div className="bg-white rounded-2xl p-6 border border-[#D9E5E7] shadow-sm">
-                      <FormRenderer
-                        fields={resolvedFields}
-                        form={form}
-                        setForm={setForm}
-                        options={options}
-                        errors={fieldErrors}
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                      <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className={`flex-1 py-3 rounded-2xl font-semibold text-white transition-all duration-300 shadow-lg ${
-                          loading
-                            ? "bg-[#7A7480] cursor-not-allowed"
-                            : "bg-gradient-to-r from-[#0097AC] to-[#006E74] hover:scale-[1.02] hover:shadow-xl"
-                        }`}
-                      >
-                        {loading ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Updating...
-                          </div>
-                        ) : (
-                          "Update"
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => router.push(resolvedBackPath)}
-                        disabled={loading}
-                        className="flex-1 py-3 rounded-2xl font-semibold border border-[#006E74] text-[#006E74] hover:bg-[#F2F7F8] transition-all duration-300"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => router.push(resolvedBackPath)}
+                      disabled={loading}
+                      className="flex-1 py-3 rounded-2xl font-semibold border border-[#006E74] text-[#006E74] hover:bg-[#F2F7F8] transition-all duration-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
-      </Layout>
-    </PageGuard>
+      </div>
+    </Layout>
   );
 };
 
